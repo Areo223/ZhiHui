@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.areo.zhihui.mapper.StudentMapper">
+    <insert id="insert" useGeneratedKeys="true">
+        insert into student (user_id,class_id,information,create_time,update_time,deleted)
+        values (#{userId}, #{classId}, #{information}, #{createTime}, #{updateTime}, #{deleted})
+    </insert>
+    <select id="checkIfStudentExist" resultType="java.lang.Boolean">
+        select exists(select 1 from student where user_id = #{id})
+    </select>
+</mapper>

@@ -1,5 +1,7 @@
 package org.areo.zhihui.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.areo.zhihui.annotation.RequiresRole;
 import org.areo.zhihui.pojo.Restful.ResultJson;
@@ -13,6 +15,7 @@ import org.areo.zhihui.utils.enums.RoleEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "用户管理")
 @RestController
 @RequestMapping("/user")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
@@ -22,6 +25,7 @@ public class UserController {
 
 
 
+    @Operation(summary = "登录", description = "登录")
     @PostMapping("/login")
     public ResultJson login(@RequestBody LoginRequest request) {
         return userService.login(request.getIdentifier(), request.getPassword())
@@ -30,6 +34,7 @@ public class UserController {
 
 
 
+    @Operation(summary = "注册", description = "注册")
     @PostMapping("/addUser")
     @RequiresRole(value = {RoleEnum.ADMIN})
     public ResultJson addUser(@RequestBody RegisterRequest request) {
@@ -37,6 +42,7 @@ public class UserController {
                .toJson(); // 自动转换为 JSON
     }
 
+    @Operation(summary = "删除用户", description = "删除用户")
     @DeleteMapping("/deleteUser")
     @RequiresRole(value = {RoleEnum.ADMIN})
     public ResultJson deleteUser(@RequestBody UserBaseRequest request) {
@@ -44,6 +50,8 @@ public class UserController {
               .toJson(); // 自动转换为 JSON
     }
 
+
+    @Operation(summary = "更新用户", description = "更新用户")
     @PutMapping("/updateUser")
     @RequiresRole(value = {RoleEnum.ADMIN})
     public ResultJson updateUser(@RequestBody UserAllRequest request) {
@@ -51,6 +59,8 @@ public class UserController {
              .toJson(); // 自动转换为 JSON
     }
 
+
+    @Operation(summary = "查询用户", description = "查询用户")
     @GetMapping("/getUser")
     @RequiresRole(value = {RoleEnum.ADMIN})
     public ResultJson getUser(@RequestBody UserBaseRequest request) {
@@ -58,6 +68,7 @@ public class UserController {
             .toJson(); // 自动转换为 JSON
     }
 
+    @Operation(summary = "查询自己的用户信息", description = "查询自己的用户信息")
     @GetMapping("/getOwnUser")
     public ResultJson getOwnUser() {
         return userService.getOwnUserInfo(UserHolder.getUser().getId())

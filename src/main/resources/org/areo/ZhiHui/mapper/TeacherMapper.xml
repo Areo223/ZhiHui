@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.areo.zhihui.mapper.TeacherMapper">
+    <insert id="insert">
+        insert into teacher (user_id, college_id, title, information,create_time,update_time,deleted)
+        values (#{id}, #{collegeId}, #{title}, #{information}, #{createTime}, #{updateTime}, #{deleted})
+    </insert>
+    <select id="checkIfTeacherExists" resultType="java.lang.Boolean">
+        select exists(select 1 from teacher where user_id = #{id})
+    </select>
+</mapper>

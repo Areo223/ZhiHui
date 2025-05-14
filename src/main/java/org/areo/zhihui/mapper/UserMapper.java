@@ -23,4 +23,6 @@ public interface UserMapper extends BaseMapper<User> {
     Student getOwnStudentInfo(Integer id);
 
     Teacher getOwnTeacherInfo(Integer id);
+
+
 }

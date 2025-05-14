@@ -8,4 +8,6 @@ import org.springframework.stereotype.Service;
 @Service
 public interface StudentService {
     Result<StudentVO> getStuImformation();
+
+    Result<Void> addStu(Student student);
 }

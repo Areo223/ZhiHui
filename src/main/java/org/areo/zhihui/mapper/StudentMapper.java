@@ -6,4 +6,8 @@ import org.areo.zhihui.pojo.entity.Student;
 
 @Mapper
 public interface StudentMapper extends BaseMapper<Student> {
+    boolean checkIfStudentExist(Integer id);
+
+    @Override
+    int insert(Student student);
 }

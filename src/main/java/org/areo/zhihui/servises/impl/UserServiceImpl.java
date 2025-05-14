@@ -3,6 +3,7 @@ package org.areo.zhihui.servises.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.areo.zhihui.exception.CommonException;
 import org.areo.zhihui.exception.UserException.UserDeleteErrorException;
 import org.areo.zhihui.exception.ValidatorException;
 import org.areo.zhihui.mapper.UserMapper;
@@ -65,7 +66,7 @@ public class UserServiceImpl implements UserService {
         // 检查用户是否已存在（防止并发注册）
         if (userMapper.exists(new QueryWrapper<User>().eq("identifier", identifier))) {
             log.warn("注册失败，用户已存在: {}", identifier);
-            return Result.failure(new IllegalArgumentException("该账号已注册"));
+            return Result.failure(new CommonException("该账号已注册"));
         }
 
         log.debug("开始加密密码");
@@ -222,7 +223,7 @@ public class UserServiceImpl implements UserService {
             return Result.success(user);
         }
 
-        log.info("用户未注册，尝试自动注册，标识: {}", identifier);
+        log.debug("用户未注册，标识: {}", identifier);
         return Result.failure(new AccountLockedException("用户未注册"));
 //        return addUser(request.getIdentifier(), identifier, password, request.getRole())
 //                .ifSuccess(__ -> log.info("自动注册成功，标识: {}", identifier))

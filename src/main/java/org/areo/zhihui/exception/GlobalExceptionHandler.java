@@ -21,6 +21,28 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
 
+//    @ExceptionHandler(MethodArgumentNotValidException.class)
+//    public ResponseEntity<ExistsValidator.ValidationErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
+//        List<ExistsValidator.ValidationErrorResponse.FieldErrorDetail> errors = ex.getBindingResult().getFieldErrors()
+//                .stream()
+//                .map(error -> {
+//                    ExistsValidator.ValidationErrorResponse.FieldErrorDetail detail = new ExistsValidator.ValidationErrorResponse.FieldErrorDetail();
+//                    detail.setField(error.getField());
+//                    detail.setRejectedValue(error.getRejectedValue());
+//                    detail.setMessage(error.getDefaultMessage());
+//                    return detail;
+//                })
+//                .collect(Collectors.toList());
+//
+//        ExistsValidator.ValidationErrorResponse response = new ExistsValidator.ValidationErrorResponse();
+//        response.setStatus(HttpStatus.BAD_REQUEST.value());
+//        response.setMessage("请求参数验证失败");
+//        response.setErrors(errors);
+//        response.setTimestamp(System.currentTimeMillis());
+//
+//        return ResponseEntity.badRequest().body(response);
+//    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Restful.ResultJson> handleGenericException(Exception ex) {
         Restful.ResultJson error = Restful.error(

@@ -1,6 +1,8 @@
 package org.areo.zhihui.pojo;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
 public class Restful {
@@ -8,8 +10,11 @@ public class Restful {
 
     @Getter
     public static class ResultJson{
+        @Schema(description = "状态码", example = "200")
         private final int code;
+        @Schema(description = "提示信息", example = "操作成功")
         private final String msg;
+        @Schema(description = "数据", example = "{}")
         private final Object data;
 
         private ResultJson(int code, String msg, Object data) {
@@ -39,7 +44,6 @@ public class Restful {
         return new ResultJson(SUCCESS_CODE, msg, data);
     }
 
-    // 方法重载（支持不同参数组合）
     public static ResultJson success(Object data) {
         return success("操作成功", data);
     }
@@ -72,7 +76,4 @@ public class Restful {
         return success("登录成功", data);
     }
 
-    public static ResultJson loginSuccess() {
-        return loginSuccess(null);
-    }
 }
