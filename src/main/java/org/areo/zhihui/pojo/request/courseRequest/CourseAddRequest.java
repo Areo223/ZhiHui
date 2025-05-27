@@ -1,9 +1,10 @@
-package org.areo.zhihui.pojo.request;
+package org.areo.zhihui.pojo.request.courseRequest;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import org.areo.zhihui.utils.enums.CourseStatusEnum;
 import org.springframework.lang.Nullable;
 
 @Data
@@ -31,4 +32,8 @@ public class CourseAddRequest {
     @Nullable
     @Schema(description = "教师ID", example = "1")
     private Integer teacherId;
+
+    @Nullable
+    @Schema(description = "开课状态", example = "0为未开课，1为开课,-1为已结课")
+    private CourseStatusEnum semester;
 }

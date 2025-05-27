@@ -5,12 +5,15 @@ import lombok.Data;
 import org.areo.zhihui.annotation.Exists;
 import org.areo.zhihui.pojo.entity.Class;
 import org.areo.zhihui.pojo.entity.User;
+import org.areo.zhihui.utils.enums.RoleEnum;
 import org.springframework.lang.Nullable;
 
 @Data
 public class StudentAddRequest {
+    private final RoleEnum role = RoleEnum.STUDENT;
+
     @Schema(description = "用户id")
-    @Exists(entity = User.class,message = "用户不存在")
+    @Exists(entity = User.class,message = "用户不存在", roles = RoleEnum.STUDENT)
     private Integer userId;
 
     @Schema(description = "班级id")

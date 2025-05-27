@@ -3,6 +3,7 @@ package org.areo.zhihui.annotation;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 import org.areo.zhihui.utils.ExistsValidator;
+import org.areo.zhihui.utils.enums.RoleEnum;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -19,4 +20,7 @@ public @interface Exists {
 
     Class<?> entity();
     String field() default "id";
+
+    //添加一个参数,用于指定要对应的身份
+    RoleEnum[] roles() default {RoleEnum.ADMIN};
 }

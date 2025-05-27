@@ -11,6 +11,8 @@ import org.areo.zhihui.servises.TeacherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -41,5 +43,11 @@ public class TeacherServiceImpl implements TeacherService {
             log.error("写入异常，标识: {} 错误:{}",teacher.getUserId(),e.getMessage());
             return Result.failure(e);
         }
+    }
+
+    @Override
+    public Result<Void> deleteTeacher(List<Integer> ids) {
+        // 先检查教师是否有关联的课程
+        return null;
     }
 }

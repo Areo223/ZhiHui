@@ -5,13 +5,12 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.areo.zhihui.pojo.Restful.ResultJson;
 import org.areo.zhihui.pojo.entity.Teacher;
-import org.areo.zhihui.pojo.request.TeacherAddRequest;
+import org.areo.zhihui.pojo.request.teacherRequest.TeacherAddRequest;
+import org.areo.zhihui.pojo.request.teacherRequest.TeacherBaseRequest;
 import org.areo.zhihui.servises.TeacherService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "教师管理")
 @RestController
@@ -22,11 +21,17 @@ public class TeacherController {
     private final TeacherService teacherService;
 
     //添加教师信息
-    @RequestMapping("/addTeacher")
+    @PostMapping()
     public ResultJson addTeacher(@Valid @RequestBody TeacherAddRequest teacherAddRequest) {
         Teacher teacher = new Teacher();
         BeanUtils.copyProperties(teacherAddRequest, teacher);
         return teacherService.addTeacher(teacher).toJson();
 
+    }
+
+    //删除教师信息
+    @DeleteMapping()
+    public ResultJson deleteTeacher(@Valid @RequestBody TeacherBaseRequest request) {
+        return teacherService.deleteTeacher(request.getIds()).toJson();
     }
 }

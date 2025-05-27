@@ -6,6 +6,8 @@ import lombok.Data;
 @Data
 @TableName("student")
 public class Student extends User {
+    //id
+    private Integer id;
     //对应学生id
     private Integer userId;
     //对应班级id

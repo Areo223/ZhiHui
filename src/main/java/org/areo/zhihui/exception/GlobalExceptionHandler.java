@@ -1,12 +1,16 @@
 package org.areo.zhihui.exception;
 
 import org.areo.zhihui.pojo.Restful;
+import org.areo.zhihui.utils.ExistsValidator;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.nio.file.AccessDeniedException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -21,27 +25,27 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
 
-//    @ExceptionHandler(MethodArgumentNotValidException.class)
-//    public ResponseEntity<ExistsValidator.ValidationErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
-//        List<ExistsValidator.ValidationErrorResponse.FieldErrorDetail> errors = ex.getBindingResult().getFieldErrors()
-//                .stream()
-//                .map(error -> {
-//                    ExistsValidator.ValidationErrorResponse.FieldErrorDetail detail = new ExistsValidator.ValidationErrorResponse.FieldErrorDetail();
-//                    detail.setField(error.getField());
-//                    detail.setRejectedValue(error.getRejectedValue());
-//                    detail.setMessage(error.getDefaultMessage());
-//                    return detail;
-//                })
-//                .collect(Collectors.toList());
-//
-//        ExistsValidator.ValidationErrorResponse response = new ExistsValidator.ValidationErrorResponse();
-//        response.setStatus(HttpStatus.BAD_REQUEST.value());
-//        response.setMessage("请求参数验证失败");
-//        response.setErrors(errors);
-//        response.setTimestamp(System.currentTimeMillis());
-//
-//        return ResponseEntity.badRequest().body(response);
-//    }
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ExistsValidator.ValidationErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        List<ExistsValidator.ValidationErrorResponse.FieldErrorDetail> errors = ex.getBindingResult().getFieldErrors()
+                .stream()
+                .map(error -> {
+                    ExistsValidator.ValidationErrorResponse.FieldErrorDetail detail = new ExistsValidator.ValidationErrorResponse.FieldErrorDetail();
+                    detail.setField(error.getField());
+                    detail.setRejectedValue(error.getRejectedValue());
+                    detail.setMessage(error.getDefaultMessage());
+                    return detail;
+                })
+                .collect(Collectors.toList());
+
+        ExistsValidator.ValidationErrorResponse response = new ExistsValidator.ValidationErrorResponse();
+        response.setStatus(HttpStatus.BAD_REQUEST.value());
+        response.setMessage("请求参数验证失败");
+        response.setErrors(errors);
+        response.setTimestamp(System.currentTimeMillis());
+
+        return ResponseEntity.badRequest().body(response);
+    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Restful.ResultJson> handleGenericException(Exception ex) {

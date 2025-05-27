@@ -2,6 +2,7 @@ package org.areo.zhihui.pojo.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
+import org.areo.zhihui.utils.enums.CourseStatusEnum;
 
 import java.util.List;
 
@@ -31,5 +32,7 @@ public class Course extends BaseEntity {
     private Integer totalHours;
     //考试时间
     private String examTime;
+    //课程状态
+    private CourseStatusEnum status;
 
 }

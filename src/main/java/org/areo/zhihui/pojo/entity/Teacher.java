@@ -4,6 +4,8 @@ import lombok.Data;
 
 @Data
 public class Teacher extends User {
+    //id
+    private Integer id;
     //对应用户id
     private Integer userId;
     //对应学院id

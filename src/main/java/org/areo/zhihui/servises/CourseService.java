@@ -13,4 +13,8 @@ public interface CourseService {
     Result<Void> deleteCourse(Integer id);
 
     Result<List<Course>> getCourse();
+
+    Result<Void> updateCourse(Course course);
+
+    Result<List<Course>> getSelectedCourse();
 }

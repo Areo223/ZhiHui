@@ -1,6 +1,7 @@
 package org.areo.zhihui.pojo.entity;
 
 import lombok.Data;
+import org.areo.zhihui.utils.enums.SemesterEnum;
 
 @Data
 public class Enrollment extends BaseEntity{
@@ -11,6 +12,6 @@ public class Enrollment extends BaseEntity{
     //成绩
     private String grade;
     //学期
-    private String semester;
+    private SemesterEnum semester;
 
 }

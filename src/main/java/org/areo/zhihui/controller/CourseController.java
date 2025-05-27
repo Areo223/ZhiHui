@@ -4,11 +4,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
+import org.areo.zhihui.annotation.RequiresRole;
 import org.areo.zhihui.pojo.Restful.ResultJson;
 import org.areo.zhihui.pojo.entity.Course;
-import org.areo.zhihui.pojo.request.CourseAddRequest;
-import org.areo.zhihui.pojo.request.CourseBaseRequest;
+import org.areo.zhihui.pojo.request.courseRequest.CourseAddRequest;
+import org.areo.zhihui.pojo.request.courseRequest.CourseBaseRequest;
+import org.areo.zhihui.pojo.request.courseRequest.CourseUptRequest;
 import org.areo.zhihui.servises.CourseService;
+import org.areo.zhihui.utils.enums.RoleEnum;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -37,6 +40,14 @@ public class CourseController {
         return courseService.deleteCourse(request.getId()).toJson();
     }
 
+    @Operation(summary = "修改课程", description = "修改课程信息")
+    @PutMapping("/update")
+    public ResultJson updateCourse(@Valid @RequestBody CourseUptRequest request) {
+        Course course = new Course();
+        BeanUtils.copyProperties(request,course,Course.class);
+        return courseService.updateCourse(course).toJson();
+    }
+
 
     /*
     * 查询课程信息
@@ -54,9 +65,10 @@ public class CourseController {
     }
 
     @Operation(summary = "查询已选课程", description = "查询已选课程信息")
+    @RequiresRole(RoleEnum.STUDENT)
     @GetMapping("/getSelectedCourse")
     public ResultJson getSelectedCourse() {
-        return null;
+        return courseService.getSelectedCourse().toJson();
     }
 
 

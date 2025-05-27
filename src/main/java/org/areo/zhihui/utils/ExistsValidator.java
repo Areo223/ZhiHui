@@ -5,11 +5,15 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.areo.zhihui.annotation.Exists;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.areo.zhihui.pojo.entity.User;
+import org.areo.zhihui.utils.enums.RoleEnum;
 
+import java.util.Arrays;
 import java.util.List;
 
+@Slf4j
 public class ExistsValidator implements ConstraintValidator<Exists, Object> {
     @Data
     public static class ValidationErrorResponse {
@@ -27,16 +31,16 @@ public class ExistsValidator implements ConstraintValidator<Exists, Object> {
 
         }
     }
-    @Autowired
-    private MybatisReflect mybatisReflect;
 
     private Class<?> entity;
     private String field;
+    private RoleEnum[] roles;
 
     @Override
     public void initialize(Exists constraintAnnotation) {
         this.entity = constraintAnnotation.entity();
         this.field = constraintAnnotation.field();
+        this.roles = constraintAnnotation.roles();
     }
 
     @Override
@@ -49,44 +53,38 @@ public class ExistsValidator implements ConstraintValidator<Exists, Object> {
             context.disableDefaultConstraintViolation();
             context.buildConstraintViolationWithTemplate("未找到对应mapper: " + entity.getName())
                    .addConstraintViolation();
+            log.error("未找到对应mapper: {}", entity.getName());
+            return false;
         }
-        return mapper != null && mapper.exists(new QueryWrapper<>().eq(field, value));
+        //如果是User的话,需要判断身份是否正确对应
+        if (entity.getName().equals("org.areo.zhihui.pojo.entity.User")) {
+            //获取当前登录的用户
+            Object obj = mapper.selectOne(new QueryWrapper<>().eq("id", value));
+            if (obj != null) {
+                User user = (User) obj;
+                //如果user的role不在role集合中,则返回false
+                if (roles != null && !Arrays.asList(roles).contains(user.getRole())) {
+                    context.disableDefaultConstraintViolation();
+                    context.buildConstraintViolationWithTemplate("身份不匹配")
+                          .addConstraintViolation();
+                    log.debug("身份不匹配,当前用户id:{}",value);
+                    return false;
+                }
+
+            }
+            else {
+                context.disableDefaultConstraintViolation();
+                context.buildConstraintViolationWithTemplate("用户不存在")
+                      .addConstraintViolation();
+                log.debug("用户不存在,当前用户id:{}",value);
+                return false;
+            }
+
+        }
+        return mapper.exists(new QueryWrapper<>().eq(field, value));
 
 
-//        try {
-//            Object mapper = getMapperForEntity(entity);
-//            QueryWrapper<?> queryWrapper = new QueryWrapper<>();
-//            queryWrapper.eq(field, value);
-//
-//            // 使用Mapper的selectCount方法
-//            Integer count = (Integer) mapper.getClass()
-//                    .getMethod("selectCount", QueryWrapper.class)
-//                    .invoke(mapper, queryWrapper);
-//            System.out.println(count);
-//            return count != null && count > 0;
-//        } catch (Exception e) {
-//            // 可根据需要记录错误日志
-//            return false;
-//        }
+
     }
 
-//    /**
-//     * 根据实体类获取对应的Mapper实例。
-//     * 该方法会先从缓存中查找Mapper实例，如果缓存中不存在，则根据命名约定生成Mapper名称，
-//     * 并从Spring的应用上下文中获取对应的Bean，最后将其存入缓存。
-//     *
-//     * @param entityClass 实体类的Class对象
-//     * @return 对应的Mapper实例
-//     */
-//    private Object getMapperForEntity(Class<?> entityClass) {
-//        // 从缓存中查找实体类对应的Mapper实例，如果不存在则计算并添加到缓存中
-//        return mapperCache.computeIfAbsent(entityClass, key -> {
-//            // Mapper命名约定: 实体类名 + "Mapper" (首字母大写)
-//            // 生成Mapper的名称，将实体类拼接 "Mapper"
-//            String mapperName =
-//                    key.getSimpleName() + "Mapper";
-//            // 从Spring的应用上下文中获取指定名称的Bean，即对应的Mapper实例
-//            return applicationContext.getBean(mapperName);
-//        });
-//    }
 }

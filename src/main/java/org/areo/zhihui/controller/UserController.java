@@ -5,10 +5,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.areo.zhihui.annotation.RequiresRole;
 import org.areo.zhihui.pojo.Restful.ResultJson;
-import org.areo.zhihui.pojo.request.LoginRequest;
-import org.areo.zhihui.pojo.request.RegisterRequest;
-import org.areo.zhihui.pojo.request.UserAllRequest;
-import org.areo.zhihui.pojo.request.UserBaseRequest;
+import org.areo.zhihui.pojo.request.Auth.LoginRequest;
+import org.areo.zhihui.pojo.request.Auth.RegisterRequest;
+import org.areo.zhihui.pojo.request.Auth.UserAllRequest;
+import org.areo.zhihui.pojo.request.Auth.UserBaseRequest;
 import org.areo.zhihui.servises.UserService;
 import org.areo.zhihui.utils.UserHolder;
 import org.areo.zhihui.utils.enums.RoleEnum;
@@ -71,7 +71,7 @@ public class UserController {
     @Operation(summary = "查询自己的用户信息", description = "查询自己的用户信息")
     @GetMapping("/getOwnUser")
     public ResultJson getOwnUser() {
-        return userService.getOwnUserInfo(UserHolder.getUser().getId())
+        return userService.getOwnUserInfo(UserHolder.getUserId())
            .toJson(); // 自动转换为 JSON
     }
 

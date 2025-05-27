@@ -5,12 +5,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.areo.zhihui.mapper.ClassMapper;
 import org.areo.zhihui.mapper.CourseMapper;
+import org.areo.zhihui.mapper.EnrollmentMapper;
 import org.areo.zhihui.mapper.UserMapper;
 import org.areo.zhihui.pojo.dto.Result;
+import org.areo.zhihui.pojo.entity.*;
 import org.areo.zhihui.pojo.entity.Class;
-import org.areo.zhihui.pojo.entity.Course;
-import org.areo.zhihui.pojo.entity.Student;
-import org.areo.zhihui.pojo.entity.User;
 import org.areo.zhihui.servises.CourseService;
 import org.areo.zhihui.utils.UserHolder;
 import org.areo.zhihui.utils.enums.RoleEnum;
@@ -28,6 +27,7 @@ public class CourseServiceImpl implements CourseService {
     private final CourseMapper courseMapper;
     private final ClassMapper classMapper;
     private final UserMapper userMapper;
+    private final EnrollmentMapper enrollmentMapper;
 
 
     @Override
@@ -74,6 +74,27 @@ public class CourseServiceImpl implements CourseService {
         );
         return Result.success(courseList);
 
+
+    }
+
+    @Override
+    public Result<Void> updateCourse(Course course) {
+        log.info("修改课程：{}", course);
+        courseMapper.updateById(course);
+        return Result.success(null);
+    }
+
+    @Override
+    public Result<List<Course>> getSelectedCourse() {
+        log.debug("查询课程开始");
+        User user = UserHolder.getUser();
+        // 要通过查询选课表来获取学生选择的课程信息
+        List<Enrollment> enrollments = enrollmentMapper.selectList(new QueryWrapper<Enrollment>().eq("student_id", user.getId()));
+        // 遍历选课表，获取课程信息
+        List<Course> courseList = enrollments.stream()
+                .map(enrollment -> courseMapper.selectById(enrollment.getCourseId()))
+                .toList();
+        return Result.success(courseList);
 
     }
 }

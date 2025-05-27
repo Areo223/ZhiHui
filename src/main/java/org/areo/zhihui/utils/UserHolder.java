@@ -13,6 +13,10 @@ public class UserHolder {
     public static User getUser() {
         return userThreadLocal.get();
     }
+
+    public static Integer getUserId() {
+        return userThreadLocal.get().getId();
+    }
     //清除用户对象的方法
     public static void removeUser() {
         userThreadLocal.remove();

@@ -1,4 +1,4 @@
-package org.areo.zhihui.pojo.request;
+package org.areo.zhihui.pojo.request.teacherRequest;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
@@ -6,13 +6,14 @@ import lombok.Data;
 import org.areo.zhihui.annotation.Exists;
 import org.areo.zhihui.pojo.entity.College;
 import org.areo.zhihui.pojo.entity.User;
+import org.areo.zhihui.utils.enums.RoleEnum;
 import org.springframework.lang.Nullable;
 
 @Data
 public class TeacherAddRequest {
     //对应用户id
     @Schema(description = "用户id")
-    @Exists(entity = User.class,message = "用户不存在")
+    @Exists(entity = User.class,message = "用户不存在", roles = {RoleEnum.TEACHER,RoleEnum.ADMIN})
     @NotNull(message = "用户id不能为空")
     private Integer userId;
 
