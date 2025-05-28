@@ -1,4 +1,4 @@
-package org.areo.zhihui.servises.impl;
+package org.areo.zhihui.services.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,7 @@ import org.areo.zhihui.pojo.vo.LoginVO;
 import org.areo.zhihui.pojo.vo.StudentVO;
 import org.areo.zhihui.pojo.vo.TeacherVO;
 import org.areo.zhihui.pojo.vo.UserVO;
-import org.areo.zhihui.servises.UserService;
+import org.areo.zhihui.services.UserService;
 import org.areo.zhihui.utils.JwtUtils;
 import org.areo.zhihui.utils.UserHolder;
 import org.areo.zhihui.utils.enums.LockedEnum;

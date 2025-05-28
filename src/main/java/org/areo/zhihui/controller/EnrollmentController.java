@@ -9,7 +9,7 @@ import org.areo.zhihui.pojo.Restful.ResultJson;
 import org.areo.zhihui.pojo.entity.Enrollment;
 import org.areo.zhihui.pojo.request.enrollmentRequest.EnrollmentAddRequest;
 import org.areo.zhihui.pojo.request.enrollmentRequest.EnrollmentBaseRequest;
-import org.areo.zhihui.servises.EnrollmentService;
+import org.areo.zhihui.services.EnrollmentService;
 import org.areo.zhihui.utils.UserHolder;
 import org.areo.zhihui.utils.enums.RoleEnum;
 import org.springframework.beans.BeanUtils;

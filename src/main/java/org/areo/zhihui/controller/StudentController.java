@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.areo.zhihui.pojo.Restful.ResultJson;
 import org.areo.zhihui.pojo.entity.Student;
 import org.areo.zhihui.pojo.request.StudentAddRequest;
-import org.areo.zhihui.servises.StudentService;
+import org.areo.zhihui.services.StudentService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;

@@ -10,7 +10,7 @@ import org.areo.zhihui.pojo.entity.Course;
 import org.areo.zhihui.pojo.request.courseRequest.CourseAddRequest;
 import org.areo.zhihui.pojo.request.courseRequest.CourseBaseRequest;
 import org.areo.zhihui.pojo.request.courseRequest.CourseUptRequest;
-import org.areo.zhihui.servises.CourseService;
+import org.areo.zhihui.services.CourseService;
 import org.areo.zhihui.utils.enums.RoleEnum;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;

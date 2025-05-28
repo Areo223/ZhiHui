@@ -1,4 +1,4 @@
-package org.areo.zhihui.servises.impl;
+package org.areo.zhihui.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -6,7 +6,7 @@ import org.areo.zhihui.exception.CommonException;
 import org.areo.zhihui.mapper.EnrollmentMapper;
 import org.areo.zhihui.pojo.dto.Result;
 import org.areo.zhihui.pojo.entity.Enrollment;
-import org.areo.zhihui.servises.EnrollmentService;
+import org.areo.zhihui.services.EnrollmentService;
 import org.areo.zhihui.utils.enums.SemesterEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

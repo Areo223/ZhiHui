@@ -9,7 +9,7 @@ import org.areo.zhihui.pojo.request.Auth.LoginRequest;
 import org.areo.zhihui.pojo.request.Auth.RegisterRequest;
 import org.areo.zhihui.pojo.request.Auth.UserAllRequest;
 import org.areo.zhihui.pojo.request.Auth.UserBaseRequest;
-import org.areo.zhihui.servises.UserService;
+import org.areo.zhihui.services.UserService;
 import org.areo.zhihui.utils.UserHolder;
 import org.areo.zhihui.utils.enums.RoleEnum;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,4 +1,4 @@
-package org.areo.zhihui.servises.impl;
+package org.areo.zhihui.services.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
@@ -8,11 +8,13 @@ import org.areo.zhihui.mapper.CourseMapper;
 import org.areo.zhihui.mapper.EnrollmentMapper;
 import org.areo.zhihui.mapper.UserMapper;
 import org.areo.zhihui.pojo.dto.Result;
-import org.areo.zhihui.pojo.entity.*;
 import org.areo.zhihui.pojo.entity.Class;
-import org.areo.zhihui.servises.CourseService;
+import org.areo.zhihui.pojo.entity.*;
+import org.areo.zhihui.pojo.vo.CourseVO;
+import org.areo.zhihui.services.CourseService;
 import org.areo.zhihui.utils.UserHolder;
 import org.areo.zhihui.utils.enums.RoleEnum;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -45,19 +47,32 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public Result<List<Course>> getCourse() {
-        log.debug("查询课程开始");
+    public Result<List<CourseVO>> getCourse() {
         User user = UserHolder.getUser();
         if (user.getRole() == RoleEnum.ADMIN) {
             // 管理员查询所有课程信息
             log.info("管理员{}查询所有课程信息", user.getId());
             List<Course> courseList = courseMapper.selectList(null);
-            return Result.success(courseList);
+            // 转换为VO
+            List<CourseVO> courseVOList = courseList.stream()
+                    .map(course -> {
+                        CourseVO courseVO = new CourseVO();
+                        BeanUtils.copyProperties(course, courseVO);
+                        return courseVO;
+                    }).toList();
+            return Result.success(courseVOList);
         } else if (user.getRole() == RoleEnum.TEACHER) {
             // 教师查询自己的课程信息
             log.info("教师{}查询自己的课程信息", user.getId());
             List<Course> courseList = courseMapper.selectList(new QueryWrapper<Course>().eq("teacher_id", user.getId()));
-            return Result.success(courseList);
+            // 转换为VO
+            List<CourseVO> courseVOList = courseList.stream()
+                   .map(course -> {
+                        CourseVO courseVO = new CourseVO();
+                        BeanUtils.copyProperties(course, courseVO);
+                        return courseVO;
+                    }).toList();
+            return Result.success(courseVOList);
         }
         // 学生查询自己能选择的课程信息
         log.info("学生{}查询自己能选择的课程信息", user.getId());
@@ -72,7 +87,14 @@ public class CourseServiceImpl implements CourseService {
                 new QueryWrapper<Course>().eq("major_id", stuClass.getMajorId())
                         .eq("grade_id", stuClass.getGradeId())
         );
-        return Result.success(courseList);
+        // 转换为VO
+        List<CourseVO> courseVOList = courseList.stream()
+              .map(course -> {
+                    CourseVO courseVO = new CourseVO();
+                    BeanUtils.copyProperties(course, courseVO);
+                    return courseVO;
+                }).toList();
+        return Result.success(courseVOList);
 
 
     }
@@ -85,15 +107,19 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public Result<List<Course>> getSelectedCourse() {
-        log.debug("查询课程开始");
+    public Result<List<CourseVO>> getSelectedCourse() {
         User user = UserHolder.getUser();
+        log.info("查询学生选择的课程信息 id{}", user.getId());
         // 要通过查询选课表来获取学生选择的课程信息
         List<Enrollment> enrollments = enrollmentMapper.selectList(new QueryWrapper<Enrollment>().eq("student_id", user.getId()));
-        // 遍历选课表，获取课程信息
-        List<Course> courseList = enrollments.stream()
-                .map(enrollment -> courseMapper.selectById(enrollment.getCourseId()))
-                .toList();
+        // 遍历选课表，获取课程信息,同时转化为vo
+        List<CourseVO> courseList = enrollments.stream()
+               .map(enrollment -> {
+                    Course course = courseMapper.selectById(enrollment.getCourseId());
+                    CourseVO courseVO = new CourseVO();
+                    BeanUtils.copyProperties(course, courseVO);
+                    return courseVO;
+                }).toList();
         return Result.success(courseList);
 
     }

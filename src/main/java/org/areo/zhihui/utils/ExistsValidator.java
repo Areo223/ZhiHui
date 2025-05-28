@@ -48,6 +48,15 @@ public class ExistsValidator implements ConstraintValidator<Exists, Object> {
         if (value == null) {
             return true; // 空值检查交给@NotNull处理
         }
+        //先判断value是否是list,如果是list,则遍历list,判断每个元素是否存在
+        if (value instanceof List<?> list) {
+            for (Object obj : list) {
+                if (!isValid(obj, context)) {
+                    return false;
+                }
+            }
+            return true;
+        }
         BaseMapper<Object> mapper = MybatisReflect.getMapper(entity);
         if (mapper == null) {
             context.disableDefaultConstraintViolation();

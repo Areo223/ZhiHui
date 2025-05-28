@@ -3,11 +3,13 @@ package org.areo.zhihui.controller;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.areo.zhihui.annotation.RequiresRole;
 import org.areo.zhihui.pojo.Restful.ResultJson;
 import org.areo.zhihui.pojo.entity.Teacher;
 import org.areo.zhihui.pojo.request.teacherRequest.TeacherAddRequest;
 import org.areo.zhihui.pojo.request.teacherRequest.TeacherBaseRequest;
-import org.areo.zhihui.servises.TeacherService;
+import org.areo.zhihui.services.TeacherService;
+import org.areo.zhihui.utils.enums.RoleEnum;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -33,5 +35,20 @@ public class TeacherController {
     @DeleteMapping()
     public ResultJson deleteTeacher(@Valid @RequestBody TeacherBaseRequest request) {
         return teacherService.deleteTeacher(request.getIds()).toJson();
+    }
+
+    //修改教师信息
+    @PutMapping()
+    public ResultJson updateTeacher(@Valid @RequestBody TeacherAddRequest request) {
+        Teacher teacher = new Teacher();
+        BeanUtils.copyProperties(request, teacher);
+        return teacherService.updateTeacher(teacher).toJson();
+    }
+
+    //查询所有教师信息
+    @GetMapping()
+    @RequiresRole(RoleEnum.ADMIN)
+    public ResultJson getAllTeacher() {
+        return teacherService.getAllTeacher().toJson();
     }
 }

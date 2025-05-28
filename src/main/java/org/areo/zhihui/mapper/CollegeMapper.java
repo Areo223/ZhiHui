@@ -6,4 +6,5 @@ import org.areo.zhihui.pojo.entity.College;
 
 @Mapper
 public interface CollegeMapper extends BaseMapper<College> {
+
 }

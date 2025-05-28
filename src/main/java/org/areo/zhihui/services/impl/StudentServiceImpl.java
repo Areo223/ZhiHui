@@ -1,4 +1,4 @@
-package org.areo.zhihui.servises.impl;
+package org.areo.zhihui.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -7,7 +7,7 @@ import org.areo.zhihui.mapper.*;
 import org.areo.zhihui.pojo.dto.Result;
 import org.areo.zhihui.pojo.entity.*;
 import org.areo.zhihui.pojo.vo.StudentVO;
-import org.areo.zhihui.servises.StudentService;
+import org.areo.zhihui.services.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

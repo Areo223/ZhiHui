@@ -1,4 +1,4 @@
-package org.areo.zhihui.servises;
+package org.areo.zhihui.services;
 
 import org.areo.zhihui.pojo.dto.Result;
 import org.areo.zhihui.pojo.entity.Student;
