@@ -16,4 +16,6 @@ public interface TeacherService {
     Result<Void> updateTeacher(Teacher teacher);
 
     Result<List<TeacherVO>> getAllTeacher();
+
+    Result<Void> updateTeacherOwn(Teacher teacher);
 }

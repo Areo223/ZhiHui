@@ -19,6 +19,8 @@ public class User extends BaseEntity {
     private String identifier;
     //角色
     private RoleEnum role;
+    //邮箱
+    private String email;
     //是否锁定
     private LockedEnum locked;
 

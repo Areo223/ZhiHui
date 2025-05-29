@@ -8,4 +8,7 @@
     <select id="checkIfStudentExist" resultType="java.lang.Boolean">
         select exists(select 1 from student where user_id = #{id})
     </select>
+    <select id="getAllStu" resultType="org.areo.zhihui.pojo.entity.Student">
+        select * from student left join user on student.user_id = user.id where student.deleted = 0
+    </select>
 </mapper>

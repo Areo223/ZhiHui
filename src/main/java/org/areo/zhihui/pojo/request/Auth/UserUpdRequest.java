@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-public class UserAllRequest extends UserBaseRequest {
+public class UserUpdRequest extends UserBaseRequest {
     @Schema(description = "姓名", example = "张三")
     private String name;
 

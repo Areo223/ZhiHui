@@ -26,4 +26,14 @@ public class ValidatorException{
             super(message);
         }
     }
+
+    public static class InvalidTokenException extends RuntimeException {
+        public InvalidTokenException(String message) {
+            super(message);
+        }
+        public InvalidTokenException() {
+            super("token无效");
+        }
+
+    }
 }

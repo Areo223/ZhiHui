@@ -1,10 +1,13 @@
 package org.areo.zhihui.services.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.areo.zhihui.exception.CommonException;
+import org.areo.zhihui.exception.MailSendErrorException;
 import org.areo.zhihui.exception.UserException.UserDeleteErrorException;
+import org.areo.zhihui.exception.UserException.UserNotRegisteredException;
 import org.areo.zhihui.exception.ValidatorException;
 import org.areo.zhihui.mapper.UserMapper;
 import org.areo.zhihui.pojo.dto.Result;
@@ -17,16 +20,20 @@ import org.areo.zhihui.pojo.vo.TeacherVO;
 import org.areo.zhihui.pojo.vo.UserVO;
 import org.areo.zhihui.services.UserService;
 import org.areo.zhihui.utils.JwtUtils;
+import org.areo.zhihui.utils.MailMsg;
 import org.areo.zhihui.utils.UserHolder;
 import org.areo.zhihui.utils.enums.LockedEnum;
 import org.areo.zhihui.utils.enums.RoleEnum;
 import org.areo.zhihui.utils.regex.RegexValidator;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.security.auth.login.AccountLockedException;
+import java.time.Duration;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -36,6 +43,8 @@ public class UserServiceImpl implements UserService {
     final private UserMapper userMapper;
     final private PasswordEncoder passwordEncoder;
     final private JwtUtils jwtUtils;
+    private final RedisTemplate redisTemplate;
+    private final MailMsg mailMsg;
 
     @Override
     public Result<LoginVO> login(String identifier, String password) {
@@ -189,6 +198,138 @@ public class UserServiceImpl implements UserService {
                 return Result.failure(new IllegalArgumentException("未知用户角色"));
         }
 
+    }
+
+    @Override
+    public Result<List<UserVO>> getAllUser() {
+        log.debug("开始查询所有用户");
+        List<User> userList = userMapper.selectList(null);
+        if (userList.isEmpty()) {
+            log.warn("用户列表为空");
+            return Result.failure(new UserDeleteErrorException("用户列表为空"));
+        }
+        //转换为UserVO列表
+        List<UserVO> userVOList = userList.stream()
+                                         .map(user -> {
+                                             UserVO userVO = new UserVO();
+                                             BeanUtils.copyProperties(user, userVO, UserVO.class);
+                                             return userVO;
+                                         })
+                                         .toList();
+        log.info("用户查询成功，共查询到 {} 条记录", userList.size());
+        return Result.success(userVOList);
+    }
+
+    @Override
+    public Result<List<UserVO>> getUsers(List<Integer> ids) {
+        log.debug("开始查询用户，ID列表: {}", ids);
+        List<User> userList = userMapper.selectByIds(ids);
+        if (userList.isEmpty()) {
+            log.warn("用户列表为空，ID列表: {}", ids);
+            return Result.failure(new UserDeleteErrorException("用户列表为空"));
+        }
+        //转换为UserVO列表
+        List<UserVO> userVOList = userList.stream()
+                                        .map(user -> {
+                                             UserVO userVO = new UserVO();
+                                             BeanUtils.copyProperties(user, userVO, UserVO.class);
+                                             return userVO;
+                                         })
+                                        .toList();
+        return Result.success(userVOList);
+    }
+
+    @Override
+    public Result<Void> passwordUpdate(String oldPassword, String newPassword) {
+        // 先获取当前用户
+        User user = UserHolder.getUser();
+        // 然后检查旧密码是否正确
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            log.warn("旧密码错误，用户ID: {}", user.getId());
+            return Result.failure(new ValidatorException.ErrorPasswordException("旧密码错误"));
+        }
+        // 检查新密码强度
+        if (!checkPasswordStrength(newPassword).isSuccess()) {
+            log.warn("新密码强度不符合要求，用户ID: {}", user.getId());
+            return Result.failure(new ValidatorException.InvalidPasswordException("新密码强度不符合要求"));
+        }
+        // 更新密码
+        user.setPassword(passwordEncoder.encode(newPassword));
+        try {
+            int affectedRows = userMapper.updateById(user);
+            if (affectedRows == 0) {
+                log.error("密码更新失败，用户ID: {}", user.getId());
+                return Result.failure(new RuntimeException("密码更新失败"));
+            }
+            log.info("密码更新成功，用户ID: {}", user.getId());
+            return Result.success(null);
+        } catch (Exception e) {
+            log.error("密码更新异常，用户ID: {}", user.getId(), e);
+            return Result.failure(e);
+        }
+    }
+
+    @Override
+    public Result<Void> forgetPassword(String identifier) {
+        // 检查用户是否存在
+        User user = userMapper.selectOne(new QueryWrapper<User>().eq("identifier", identifier));
+        if (user == null) {
+            log.warn("用户不存在，标识: {}", identifier);
+            return Result.failure(new UserNotRegisteredException("用户不存在"));
+        }
+        //如果用户存在
+        //检查用户是否被锁定
+        if (user.checkIfLocked()) {
+            log.warn("用户已被锁定，标识: {}", identifier);
+            return Result.failure(new AccountLockedException("用户已被锁定"));
+        }
+
+        String token = jwtUtils.generateToken(user);
+        //将token存入redis，设置过期时间为10分钟
+        redisTemplate.opsForValue().set("pwd_reset:"+token, user.getIdentifier(), Duration.ofMinutes(10));
+
+        String resetLink = "http://localhost:8080/user/resetPassword?token=" + token;
+        //发送邮箱验证码
+        try {
+            if(!mailMsg.linkMail(user.getEmail(),resetLink)){
+                log.warn("发送邮箱验证码失败，标识: {}", identifier);
+                return Result.failure(new MailSendErrorException("发送邮箱验证码失败"));
+            }
+        } catch (MessagingException e) {
+            throw new MailSendErrorException(e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public Result<Void> resetPassword(String token, String newPassword) {
+        // 检查token是否存在
+        String identifier = (String) redisTemplate.opsForValue().get("pwd_reset:" + token);
+        if (identifier == null) {
+            log.warn("无效或过期的token，token: {}", token);
+            return Result.failure(new ValidatorException.InvalidTokenException("无效或过期的token"));
+        }
+        // 检查新密码强度
+        if (!checkPasswordStrength(newPassword).isSuccess()) {
+            log.warn("新密码强度不符合要求，token: {}", token);
+            return Result.failure(new ValidatorException.InvalidPasswordException("新密码强度不符合要求"));
+        }
+        // 更新密码
+        User user = userMapper.selectOne(new QueryWrapper<User>().eq("identifier", identifier));
+        user.setPassword(passwordEncoder.encode(newPassword));
+        try {
+            int affectedRows = userMapper.updateById(user);
+            if (affectedRows == 0) {
+                log.error("密码重置失败，标识: {}", identifier);
+                return Result.failure(new CommonException("密码重置失败"));
+            }
+            log.info("密码重置成功，标识: {}", identifier);
+            return Result.success(null);
+        }
+        catch (Exception e) {
+            log.error("密码重置异常，标识: {}", identifier, e);
+            return Result.failure(e);
+        }
     }
 
     private Result<Void> checkPasswordStrength(String password) {
