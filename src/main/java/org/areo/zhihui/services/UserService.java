@@ -1,12 +1,15 @@
 package org.areo.zhihui.services;
 
 import org.areo.zhihui.pojo.dto.Result;
+import org.areo.zhihui.pojo.request.UserListRequest;
 import org.areo.zhihui.pojo.vo.LoginVO;
+import org.areo.zhihui.pojo.vo.QueryVO;
 import org.areo.zhihui.pojo.vo.UserVO;
 import org.areo.zhihui.utils.enums.RoleEnum;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public interface UserService {
@@ -30,4 +33,6 @@ public interface UserService {
     Result<Void> forgetPassword(String identifier);
 
     Result<Void> resetPassword(String token,String password);
+
+    Result<QueryVO<Object>> getUsers(Integer pageNum, Integer pageSize, Map<String, Boolean> sorts, UserListRequest.Conditions conditions);
 }

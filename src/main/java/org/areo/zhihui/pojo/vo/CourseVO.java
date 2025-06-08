@@ -2,6 +2,7 @@ package org.areo.zhihui.pojo.vo;
 
 import lombok.Data;
 import org.areo.zhihui.utils.enums.CourseStatusEnum;
+import org.areo.zhihui.utils.enums.CourseTypeEnum;
 
 @Data
 public class CourseVO {
@@ -12,7 +13,7 @@ public class CourseVO {
     //课程代码
     private String courseCode;
     //课程类型
-    private String courseType;
+    private CourseTypeEnum courseType;
     //学分
     private Integer credit;
     //课程描述
@@ -23,6 +24,8 @@ public class CourseVO {
     private Integer capacity;
     //课程总学时
     private Integer totalHours;
+    //周课时
+    private Integer weeklyHours;
     //考试时间
     private String examTime;
     //课程状态

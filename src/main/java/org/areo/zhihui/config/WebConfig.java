@@ -18,7 +18,9 @@ public class WebConfig implements WebMvcConfigurer {
                 .addPathPatterns("/**") // 拦截所有请求
                 .excludePathPatterns("/user/login",
                         "/swagger-ui/**","/v3/**",//swagger组件
-                        "/error","/webjars/**"//系统组件
+                        "/error","/webjars/**",//系统组件
+                        "/user/forgetPassword",//忘记密码
+                        "/user/resetPassword"//重置密码
                         );
     }
 }

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import org.areo.zhihui.utils.enums.CourseStatusEnum;
+import org.areo.zhihui.utils.enums.CourseTypeEnum;
 import org.springframework.lang.Nullable;
 
 @Data
@@ -21,8 +22,8 @@ public class CourseAddRequest {
 
     @Nullable
     @Size(max = 50, message = "课程类型长度不能超过50")
-    @Schema(description = "课程类型", example = "编程")
-    private String courseType;
+    @Schema(description = "课程类型", example = "普通课程")
+    private CourseTypeEnum courseType;
 
     @Nullable
     @Size(max = 200, message = "课程描述长度不能超过200")

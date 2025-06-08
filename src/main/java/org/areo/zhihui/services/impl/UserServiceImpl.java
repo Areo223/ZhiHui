@@ -1,6 +1,10 @@
 package org.areo.zhihui.services.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.metadata.OrderItem;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,10 +18,8 @@ import org.areo.zhihui.pojo.dto.Result;
 import org.areo.zhihui.pojo.entity.Student;
 import org.areo.zhihui.pojo.entity.Teacher;
 import org.areo.zhihui.pojo.entity.User;
-import org.areo.zhihui.pojo.vo.LoginVO;
-import org.areo.zhihui.pojo.vo.StudentVO;
-import org.areo.zhihui.pojo.vo.TeacherVO;
-import org.areo.zhihui.pojo.vo.UserVO;
+import org.areo.zhihui.pojo.request.UserListRequest;
+import org.areo.zhihui.pojo.vo.*;
 import org.areo.zhihui.services.UserService;
 import org.areo.zhihui.utils.JwtUtils;
 import org.areo.zhihui.utils.MailMsg;
@@ -34,6 +36,7 @@ import org.springframework.stereotype.Service;
 import javax.security.auth.login.AccountLockedException;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -298,7 +301,7 @@ public class UserServiceImpl implements UserService {
         } catch (MessagingException e) {
             throw new MailSendErrorException(e.getMessage());
         }
-        return null;
+        return Result.success(null);
     }
 
     @Override
@@ -330,6 +333,55 @@ public class UserServiceImpl implements UserService {
             log.error("密码重置异常，标识: {}", identifier, e);
             return Result.failure(e);
         }
+    }
+
+    @Override
+    public Result<QueryVO<Object>> getUsers(Integer pageNum, Integer pageSize, Map<String, Boolean> sorts, UserListRequest.Conditions conditions) {
+        log.debug("开始查询用户列表，页码: {}, 每页大小: {}", pageNum, pageSize);
+        Page<User> page = new Page<>(pageNum, pageSize);
+
+        //根据排序字段依次排序
+        if (sorts != null) {
+            //按排序字段顺序优先级排序,降序为true,升序为false
+            for (Map.Entry<String, Boolean> entry : sorts.entrySet()) {
+                String sortField = entry.getKey();
+                boolean isDesc = entry.getValue();
+                OrderItem orderItem = new OrderItem();
+                orderItem.setColumn(sortField);
+                orderItem.setAsc(!isDesc);
+                page.addOrder(orderItem);
+            }
+        }
+
+        IPage<User> userPage = userMapper.selectPage(page,new LambdaQueryWrapper<User>()
+                .eq(conditions.getRole() != null, User::getRole, conditions.getRole())
+                .like(conditions.getName() != null, User::getName, conditions.getName())
+                .like(conditions.getIdentifier() != null, User::getIdentifier, conditions.getIdentifier())
+                .eq(conditions.getLocked() != null, User::getLocked, conditions.getLocked())
+                .between(conditions.getStartTime() != null && conditions.getEndTime() != null
+                        , User::getCreateTime, conditions.getStartTime(), conditions.getEndTime()));
+        IPage<Object> userInfoPage = userPage.convert(user -> switch (user.getRole()) {
+            case ADMIN -> user;
+            case TEACHER -> userMapper.getOwnTeacherInfo(user.getId());
+            case STUDENT -> userMapper.getOwnStudentInfo(user.getId());
+            //            return switch (user.getRole()) {
+            //                case ADMIN -> user;
+            //                case TEACHER -> userMapper.getOwnTeacherInfo(user.getId());
+            //                case STUDENT -> userMapper.getOwnStudentInfo(user.getId());
+            //                default -> null;
+            //            };
+        });
+
+
+        QueryVO<Object> queryVO = new QueryVO<>();
+        queryVO.setData(userInfoPage.getRecords());
+        queryVO.setTotal(userInfoPage.getTotal());
+        queryVO.setPageNum((int) userInfoPage.getCurrent());
+        queryVO.setPageSize((int) userInfoPage.getSize());
+
+        log.info("用户列表查询成功，共查询到 {} 条记录", userPage.getTotal());
+        return Result.success(queryVO);
+
     }
 
     private Result<Void> checkPasswordStrength(String password) {

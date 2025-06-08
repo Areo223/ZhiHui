@@ -3,6 +3,7 @@ package org.areo.zhihui.pojo.entity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import org.areo.zhihui.utils.enums.CourseStatusEnum;
+import org.areo.zhihui.utils.enums.CourseTypeEnum;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ public class Course extends BaseEntity {
     //课程代码
     private String courseCode;
     //课程类型
-    private String courseType;
+    private CourseTypeEnum courseType;
     //学分
     private Integer credit;
     //课程描述

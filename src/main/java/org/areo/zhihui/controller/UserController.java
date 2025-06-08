@@ -6,14 +6,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.areo.zhihui.annotation.RequiresRole;
 import org.areo.zhihui.pojo.Restful.ResultJson;
-import org.areo.zhihui.pojo.request.Auth.LoginRequest;
-import org.areo.zhihui.pojo.request.Auth.RegisterRequest;
-import org.areo.zhihui.pojo.request.Auth.UserUpdRequest;
-import org.areo.zhihui.pojo.request.Auth.UserBaseRequest;
-import org.areo.zhihui.pojo.request.PasswordResetRequest;
-import org.areo.zhihui.pojo.request.UserIdListRequest;
-import org.areo.zhihui.pojo.request.passwordForgetRequest;
-import org.areo.zhihui.pojo.request.passwordUpdateRequest;
+import org.areo.zhihui.pojo.request.*;
+import org.areo.zhihui.pojo.request.auth.LoginRequest;
+import org.areo.zhihui.pojo.request.auth.RegisterRequest;
+import org.areo.zhihui.pojo.request.auth.UserUpdRequest;
+import org.areo.zhihui.pojo.request.auth.UserBaseRequest;
 import org.areo.zhihui.services.UserService;
 import org.areo.zhihui.utils.UserHolder;
 import org.areo.zhihui.utils.enums.RoleEnum;
@@ -39,7 +36,7 @@ public class UserController {
 
 
 
-    @Operation(summary = "管理员注册", description = "注册")
+    @Operation(summary = "管理员注册新用户", description = "注册新用户")
     @PostMapping("/addUser")
     @RequiresRole(value = {RoleEnum.ADMIN})
     public ResultJson addUser(@RequestBody RegisterRequest request) {
@@ -81,12 +78,11 @@ public class UserController {
     }
 
     //管理员查询所有用户
-    // TODO: 模糊查询,分页查询
-    @Operation(summary = "管理员查询指定用户", description = "查询指定用户")
+    @Operation(summary = "管理员查询指定用户", description = "查询指定用户,支持分页,支持模糊查询")
     @GetMapping("/getUsers")
     @RequiresRole(value = {RoleEnum.ADMIN})
-    public ResultJson getUsers(@Valid @RequestBody UserIdListRequest request) {
-        return userService.getUsers(request.getIds())
+    public ResultJson getUsers(@Valid @RequestBody UserListRequest request) {
+        return userService.getUsers(request.getPageNum(), request.getPageSize(),request.getSorts(),request.getConditions())
           .toJson(); // 自动转换为 JSON
     }
 
