@@ -7,7 +7,6 @@ import org.areo.zhihui.pojo.entity.Course;
 
 @Data
 public class EnrollmentBaseRequest {
-    @Exists(entity = Course.class, message = "课程不存在")
-    @NotNull(message = "课程ID不能为空")
-    private Integer courseId;
+    @NotNull(message = "课程编号不能为空")
+    private String Teaching_Class_Code;
 }

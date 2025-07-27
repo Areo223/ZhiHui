@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="org.areo.zhihui.mapper.UserMapper">
-
+<!--连接查询-->
     <select id="getOwnStudentInfo" resultType="org.areo.zhihui.pojo.entity.Student">
         select * from user left join student on user.id = student.user_id
         where user.id = #{id}
     </select>
+    <!--    嵌套查询-->
     <select id="getOwnTeacherInfo" resultType="org.areo.zhihui.pojo.entity.Teacher">
-        select * from user left join teacher on user.id = teacher.user_id
-        where user.id = #{id}
+        SELECT u.*, t.* FROM (SELECT * FROM user WHERE id = #{id}) u
+
+    </select>
+
+    <select id="getUserCount" resultType="java.util.Map">
+        select role,count(*) as user_count from user group by role order by role asc
     </select>
 </mapper>

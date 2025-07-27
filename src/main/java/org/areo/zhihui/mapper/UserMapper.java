@@ -1,10 +1,13 @@
 package org.areo.zhihui.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Mapper;
 import org.areo.zhihui.pojo.entity.Student;
 import org.areo.zhihui.pojo.entity.Teacher;
 import org.areo.zhihui.pojo.entity.User;
+
+import java.util.Map;
 
 @Mapper
 public interface UserMapper extends BaseMapper<User> {
@@ -24,5 +27,8 @@ public interface UserMapper extends BaseMapper<User> {
 
     Teacher getOwnTeacherInfo(Integer id);
 
+
+    @MapKey("role")
+    Map<String, Long> getUserCount();
 
 }

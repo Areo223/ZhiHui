@@ -5,10 +5,10 @@ import org.areo.zhihui.utils.enums.SemesterEnum;
 
 @Data
 public class Enrollment extends BaseEntity{
-    //对应学生id
-    private Integer studentId;
-    //对应课程id
-    private Integer courseId;
+    //对应学生identifier
+    private String studentIdentifier;
+    //对应课程编号
+    private String teachingClassCode;
     //成绩
     private String grade;
     //学期

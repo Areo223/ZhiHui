@@ -5,7 +5,19 @@
         select exists(
             select 1
             from enrollment e
-            where e.student_id = #{studentId} and e.course_id = #{courseId}
+            where e.student_id = #{studentId} and e.teaching_class_id = #{courseId}
         )
+    </select>
+    <select id="isStudentHasSelectedCourse" resultType="java.lang.Boolean">
+        select exists(select 1
+                      from enrollment e
+                      where e.student_id = (select s.id
+                                            from student s
+                                                     inner join user u
+                                                                on s.user_id = u.id
+                                            where u.identifier = #{studentIdentifier})
+                        and e.teaching_class_id = (select t.id
+                                                   from teaching_class t
+                                                   where t.teaching_class_code = #{teachingClassCode}))
     </select>
 </mapper>

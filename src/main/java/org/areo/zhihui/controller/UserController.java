@@ -62,6 +62,25 @@ public class UserController {
     }
 
 
+    // 分组查询,查询各个身份有多少人
+    @Operation(summary = "管理员查询用户数量", description = "查询用户数量")
+    @GetMapping("/getUserCount")
+    @RequiresRole(value = {RoleEnum.ADMIN})
+    public ResultJson getUserCount() {
+        return userService.getUserCount()
+           .toJson(); // 自动转换为 JSON
+    }
+
+//    //嵌套查询,查询用户信息和身份信息
+//    @Operation(summary = "管理员查询用户信息", description = "查询用户信息")
+//    @GetMapping("/getUser")
+//    @RequiresRole(value = {RoleEnum.ADMIN})
+//    public ResultJson getUser(@RequestBody UserBaseRequest request) {
+//        return userService.getUser(request.getId())
+//           .toJson(); // 自动转换为 JSON
+//    }
+
+
 //    @Operation(summary = "管理员查询用户", description = "查询用户")
 //    @GetMapping("/getUser")
 //    @RequiresRole(value = {RoleEnum.ADMIN})

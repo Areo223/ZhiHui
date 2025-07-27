@@ -34,7 +34,7 @@ public class EnrollmentController {
     public ResultJson selectCourse(@Valid @RequestBody EnrollmentBaseRequest request){
         Enrollment enrollment = new Enrollment();
         BeanUtils.copyProperties(request, enrollment);
-        enrollment.setStudentId(UserHolder.getUserId());
+        enrollment.setStudentIdentifier(UserHolder.getUser().getIdentifier());
        return enrollmentService.selectCourse(enrollment).toJson();
     }
 

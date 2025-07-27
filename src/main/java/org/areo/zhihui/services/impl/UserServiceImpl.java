@@ -32,11 +32,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.security.auth.login.AccountLockedException;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -72,6 +74,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public Result<Void> addUser(String identifier, String password,String name,RoleEnum role) {
         log.info("开始注册流程，用户标识: {}", identifier);
 
@@ -159,19 +162,6 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    @Override
-    public Result<UserVO> getUser(Integer id) {
-        log.debug("开始查询用户，ID: {}", id);
-        User user = userMapper.selectById(id);
-        if (user == null) {
-            log.warn("用户不存在，ID: {}", id);
-            return Result.failure(new UserDeleteErrorException("用户不存在"));
-        }
-        log.info("用户查询成功，ID: {}", id);
-        UserVO userVO = new UserVO();
-        BeanUtils.copyProperties(user,userVO,UserVO.class);
-        return Result.success(userVO);
-    }
 
     @Override
     public Result<Object> getOwnUserInfo(Integer id) {
@@ -382,6 +372,14 @@ public class UserServiceImpl implements UserService {
         log.info("用户列表查询成功，共查询到 {} 条记录", userPage.getTotal());
         return Result.success(queryVO);
 
+    }
+
+    @Override
+    public Result<Object> getUserCount() {
+        //查询每个角色的用户数
+        Map<String, Long> userCountMap = userMapper.getUserCount();
+        log.info("用户数量查询成功，结果: {}", userCountMap);
+        return Result.success(userCountMap);
     }
 
     private Result<Void> checkPasswordStrength(String password) {

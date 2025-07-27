@@ -5,6 +5,5 @@ import org.areo.zhihui.pojo.entity.Student;
 
 
 public class EnrollmentAddRequest extends EnrollmentBaseRequest {
-    @Exists(entity = Student.class, message = "学生不存在")
-    private Integer studentId;
+    private String studentIdentifier;
 }

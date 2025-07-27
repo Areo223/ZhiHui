@@ -21,8 +21,6 @@ public class Course extends BaseEntity {
     private Integer credit;
     //课程描述
     private String courseDesc;
-    //教师id
-    private Integer teacherId;
     //面向专业
     private Integer majorId;
     //面向年级
@@ -31,6 +29,8 @@ public class Course extends BaseEntity {
     private Integer capacity;
     //课程总学时
     private Integer totalHours;
+    //课程总周数
+    private Integer weeklyHours;
     //考试时间
     private String examTime;
     //课程状态

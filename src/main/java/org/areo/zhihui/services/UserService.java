@@ -20,7 +20,7 @@ public interface UserService {
 
     Result<Void> updateUser(Integer id, String name, String role, String identifier, String password);
 
-    Result<UserVO> getUser(Integer id);
+
 
     Result<Object> getOwnUserInfo(Integer id);
 
@@ -35,4 +35,6 @@ public interface UserService {
     Result<Void> resetPassword(String token,String password);
 
     Result<QueryVO<Object>> getUsers(Integer pageNum, Integer pageSize, Map<String, Boolean> sorts, UserListRequest.Conditions conditions);
+
+    Result<Object> getUserCount();
 }
