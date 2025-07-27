@@ -76,7 +76,7 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
     public void asynSaveSelection(String studentIdentifier, String teachingClassCode) {
         try {
             // 检查是否已经选过
-            boolean exists = enrollmentMapper.isStudentHasSelectedCourse(studentIdentifier,teachingClassCode);
+            boolean exists = enrollmentMapper.checkIfStudentHasSelectedCourse(studentIdentifier,teachingClassCode);
             if(exists){
                 //回滚Redis操作
                 courseCacheService.increaseCourseStock(teachingClassCode);
