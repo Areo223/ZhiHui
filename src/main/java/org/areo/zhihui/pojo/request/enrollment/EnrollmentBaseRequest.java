@@ -1,9 +1,7 @@
-package org.areo.zhihui.pojo.request.enrollmentRequest;
+package org.areo.zhihui.pojo.request.enrollment;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import org.areo.zhihui.annotation.Exists;
-import org.areo.zhihui.pojo.entity.Course;
 
 @Data
 public class EnrollmentBaseRequest {

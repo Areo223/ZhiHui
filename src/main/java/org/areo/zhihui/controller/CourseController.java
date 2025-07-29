@@ -7,9 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.areo.zhihui.annotation.RequiresRole;
 import org.areo.zhihui.pojo.Restful.ResultJson;
 import org.areo.zhihui.pojo.entity.Course;
-import org.areo.zhihui.pojo.request.courseRequest.CourseAddRequest;
-import org.areo.zhihui.pojo.request.courseRequest.CourseBaseRequest;
-import org.areo.zhihui.pojo.request.courseRequest.CourseUptRequest;
+import org.areo.zhihui.pojo.request.course.CourseAddRequest;
+import org.areo.zhihui.pojo.request.course.CourseBaseRequest;
+import org.areo.zhihui.pojo.request.course.CourseUptRequest;
 import org.areo.zhihui.services.CourseService;
 import org.areo.zhihui.utils.enums.RoleEnum;
 import org.springframework.beans.BeanUtils;
@@ -67,12 +67,7 @@ public class CourseController {
         return courseService.getCourse().toJson();
     }
 
-    @Operation(summary = "查询已选课程", description = "查询已选课程信息")
-    @RequiresRole(RoleEnum.STUDENT)
-    @GetMapping("/getSelectedCourse")
-    public ResultJson getSelectedCourse() {
-        return courseService.getSelectedCourse().toJson();
-    }
+
 
 
 

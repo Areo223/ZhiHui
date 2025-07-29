@@ -1,4 +1,4 @@
-package org.areo.zhihui.pojo.request;
+package org.areo.zhihui.pojo.request.auth;
 
 import lombok.Data;
 

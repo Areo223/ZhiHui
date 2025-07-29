@@ -7,10 +7,10 @@ import lombok.RequiredArgsConstructor;
 import org.areo.zhihui.annotation.RequiresRole;
 import org.areo.zhihui.pojo.Restful.ResultJson;
 import org.areo.zhihui.pojo.entity.Teacher;
-import org.areo.zhihui.pojo.request.TeacherUpdOwnRequest;
-import org.areo.zhihui.pojo.request.TeacherUpdRequest;
-import org.areo.zhihui.pojo.request.teacherRequest.TeacherAddRequest;
-import org.areo.zhihui.pojo.request.teacherRequest.TeacherIdListRequest;
+import org.areo.zhihui.pojo.request.teacher.TeacherUpdOwnRequest;
+import org.areo.zhihui.pojo.request.teacher.TeacherUpdRequest;
+import org.areo.zhihui.pojo.request.teacher.TeacherAddRequest;
+import org.areo.zhihui.pojo.request.teacher.TeacherIdListRequest;
 import org.areo.zhihui.services.TeacherService;
 import org.areo.zhihui.utils.enums.RoleEnum;
 import org.springframework.beans.BeanUtils;
@@ -71,4 +71,6 @@ public class TeacherController {
         BeanUtils.copyProperties(request, teacher);
         return teacherService.updateTeacherOwn(teacher).toJson();
     }
+
+    //
 }

@@ -112,9 +112,9 @@ public class CourseServiceImpl implements CourseService {
         List<Enrollment> enrollments = enrollmentMapper.selectList(new QueryWrapper<Enrollment>().eq("student_id", user.getId()));
         // 遍历选课表，获取课程信息,同时转化为vo
         List<TeachingClassVO> teachingClassVOList = enrollments.stream()
-               .map(enrollment -> {
+                .map(enrollment -> {
                     TeachingClass teachingClass = teachingClassMapper.selectOne(new QueryWrapper<TeachingClass>().eq("teaching_class_code",enrollment.getTeachingClassCode()));
-                   TeachingClassVO teachingClassVO = new TeachingClassVO();
+                    TeachingClassVO teachingClassVO = new TeachingClassVO();
                     BeanUtils.copyProperties(teachingClass, teachingClassVO);
                     return teachingClassVO;
                 }).toList();

@@ -5,14 +5,14 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface CourseCacheService {
-    void initCourseStockCache(String courseId,Integer capacity);
-    Integer getCourseStock(String courseId);
-    boolean reduceCourseStock(String courseId);
-    boolean increaseCourseStock(String courseId);
-    Long addStudentToCourse(String courseId,String studentId);
-    Long removeStudentFromCourse(String courseId,String studentId);
-    boolean isStudentInCourse(String courseId,String studentId);
-    Long getCourseStudentCount(String courseId);
-    Boolean tryLock(String courseId,long expireSeconds);
-    Boolean releaseLock(String courseId);
+    void initCourseStockCache(String teachingClassCode,Integer capacity);
+    Integer getCourseStock(String teachingClassCodeeId);
+    boolean reduceCourseStock(String teachingClassCode);
+    boolean increaseCourseStock(String teachingClassCode);
+    Long addStudentToCourse(String teachingClassCode,String studentIdentifier);
+    Long removeStudentFromCourse(String teachingClassCode,String studentIdentifier);
+    boolean isStudentInCourse(String teachingClassCode,String studentIdentifier);
+    Long getCourseStudentCount(String teachingClassCode);
+    Boolean tryLock(String teachingClassCode,long expireSeconds);
+    Boolean releaseLock(String teachingClassCode);
 }

@@ -7,4 +7,6 @@ import org.areo.zhihui.pojo.entity.TeachingClass;
 @Mapper
 public interface TeachingClassMapper extends BaseMapper<TeachingClass> {
     void reduceCurrentCapacity(String teachingClassCode);
+
+    void increaseCurrentCapacity(String teachingClassCode);
 }

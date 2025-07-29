@@ -18,7 +18,7 @@ import org.areo.zhihui.pojo.dto.Result;
 import org.areo.zhihui.pojo.entity.Student;
 import org.areo.zhihui.pojo.entity.Teacher;
 import org.areo.zhihui.pojo.entity.User;
-import org.areo.zhihui.pojo.request.UserListRequest;
+import org.areo.zhihui.pojo.request.auth.UserListRequest;
 import org.areo.zhihui.pojo.vo.*;
 import org.areo.zhihui.services.UserService;
 import org.areo.zhihui.utils.JwtUtils;
@@ -38,7 +38,6 @@ import javax.security.auth.login.AccountLockedException;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service

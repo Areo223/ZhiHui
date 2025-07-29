@@ -1,15 +1,24 @@
 package org.areo.zhihui.services.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.areo.zhihui.exception.CommonException;
 import org.areo.zhihui.mapper.EnrollmentMapper;
+import org.areo.zhihui.mapper.TeachingClassMapper;
 import org.areo.zhihui.pojo.dto.Result;
 import org.areo.zhihui.pojo.entity.Enrollment;
+import org.areo.zhihui.pojo.entity.TeachingClass;
+import org.areo.zhihui.pojo.entity.User;
+import org.areo.zhihui.pojo.vo.TeachingClassVO;
 import org.areo.zhihui.services.CourseSelectionService;
 import org.areo.zhihui.services.EnrollmentService;
+import org.areo.zhihui.utils.UserHolder;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @Slf4j
@@ -18,6 +27,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     private final EnrollmentMapper enrollmentMapper;
     private final CourseSelectionService courseSelectionService;
+    private final TeachingClassMapper teachingClassMapper;
 
     @Override
     public Result<Void> selectCourse(Enrollment enrollment) {
@@ -28,6 +38,34 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         }
 
         return Result.success(null);
+    }
+
+    @Override
+    public Result<Void> withdrawCourse(Enrollment enrollment) {
+        try {
+            courseSelectionService.withdrawCourse(enrollment.getStudentIdentifier(), enrollment.getTeachingClassCode());
+        }catch (Exception e){
+            return Result.failure(e);
+        }
+        return Result.success(null);
+    }
+
+    @Override
+    public Result<List<TeachingClassVO>> getSelectedCourse() {
+        User user = UserHolder.getUser();
+        log.info("查询学生选择的课程信息 id{}", user.getId());
+        // 要通过查询选课表来获取学生选择的课程信息
+        List<Enrollment> enrollments = enrollmentMapper.selectList(new QueryWrapper<Enrollment>().eq("student_id", user.getId()));
+        // 遍历选课表，获取课程信息,同时转化为vo
+        List<TeachingClassVO> teachingClassVOList = enrollments.stream()
+                .map(enrollment -> {
+                    TeachingClass teachingClass = teachingClassMapper.selectOne(new QueryWrapper<TeachingClass>().eq("teaching_class_code",enrollment.getTeachingClassCode()));
+                    TeachingClassVO teachingClassVO = new TeachingClassVO();
+                    BeanUtils.copyProperties(teachingClass, teachingClassVO);
+                    return teachingClassVO;
+                }).toList();
+        return Result.success(teachingClassVOList);
+
     }
 }
 

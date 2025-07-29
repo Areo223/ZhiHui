@@ -1,4 +1,4 @@
-package org.areo.zhihui.pojo.request;
+package org.areo.zhihui.pojo.request.auth;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
@@ -7,7 +7,6 @@ import lombok.Getter;
 import org.areo.zhihui.utils.enums.RoleEnum;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 
 @Data

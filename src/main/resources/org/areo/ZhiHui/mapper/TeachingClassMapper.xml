@@ -6,4 +6,9 @@
         set current_capacity = current_capacity - 1
         where teaching_class_code = #{teachingClassCode};
     </update>
+    <update id="increaseCurrentCapacity">
+        update teaching_class
+        set current_capacity = current_capacity + 1
+        where teaching_class_code = #{teachingClassCode};
+    </update>
 </mapper>

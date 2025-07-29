@@ -31,4 +31,44 @@ public class CollegeServiceImpl implements CollegeService {
         return Result.success(collegeList);
 
     }
+
+    @Override
+    public Result<Void> addCollege(College college) {
+        //添加学院信息
+        int result = collegeMapper.insert(college);
+        if (result == 0) {
+            return Result.failure(new CommonException("添加学院信息失败"));
+        }
+        return Result.success(null);
+    }
+
+    @Override
+    public Result<Void> deleteColleges(List<Integer> collegeIdList) {
+        //删除学院信息
+        int result = collegeMapper.deleteByIds(collegeIdList);
+        if (result == 0) {
+            return Result.failure(new CommonException("删除学院信息失败"));
+        }
+        return Result.success(null);
+    }
+
+    @Override
+    public Result<Void> getCollegeById(List<Integer> collegeIdList) {
+        //根据id查询学院信息
+        List<College> collegeList = collegeMapper.selectByIds(collegeIdList);
+        if (collegeList.isEmpty()) {
+            return Result.failure(new CommonException("没有查询到任何学院信息"));
+        }
+        return Result.success(null);
+    }
+
+    @Override
+    public Result<Void> updateCollege(College college) {
+        //更新学院信息
+        int result = collegeMapper.updateById(college);
+        if (result == 0) {
+            return Result.failure(new CommonException("更新学院信息失败"));
+        }
+        return Result.success(null);
+    }
 }

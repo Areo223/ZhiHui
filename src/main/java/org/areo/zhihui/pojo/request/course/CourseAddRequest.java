@@ -1,4 +1,4 @@
-package org.areo.zhihui.pojo.request.courseRequest;
+package org.areo.zhihui.pojo.request.course;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;

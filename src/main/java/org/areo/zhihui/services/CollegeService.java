@@ -9,4 +9,12 @@ import java.util.List;
 @Service
 public interface CollegeService {
     Result<List<College>> getAllCollege();
+
+    Result<Void> addCollege(College college);
+
+    Result<Void> deleteColleges(List<Integer> collegeIdList);
+
+    Result<Void> getCollegeById(List<Integer> collegeIdList);
+
+    Result<Void> updateCollege(College college);
 }

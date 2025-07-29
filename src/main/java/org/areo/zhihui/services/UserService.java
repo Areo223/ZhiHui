@@ -1,7 +1,7 @@
 package org.areo.zhihui.services;
 
 import org.areo.zhihui.pojo.dto.Result;
-import org.areo.zhihui.pojo.request.UserListRequest;
+import org.areo.zhihui.pojo.request.auth.UserListRequest;
 import org.areo.zhihui.pojo.vo.LoginVO;
 import org.areo.zhihui.pojo.vo.QueryVO;
 import org.areo.zhihui.pojo.vo.UserVO;

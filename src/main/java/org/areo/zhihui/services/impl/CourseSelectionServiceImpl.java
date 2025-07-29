@@ -2,6 +2,7 @@ package org.areo.zhihui.services.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.areo.zhihui.exception.CommonException;
 import org.areo.zhihui.mapper.EnrollmentMapper;
 import org.areo.zhihui.mapper.TeachingClassMapper;
@@ -19,9 +20,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class CourseSelectionServiceImpl implements CourseSelectionService {
-    private static final Logger log = LoggerFactory.getLogger(CourseSelectionServiceImpl.class);
     private final CourseCacheService courseCacheService;
     private final TeachingClassMapper teachingClassMapper;
     private final EnrollmentMapper enrollmentMapper;
@@ -63,7 +64,7 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
 
 
             //异步写入数据库
-            asynSaveSelection(studentIdentifier,teachingClassCode);
+            asyncSaveSelection(studentIdentifier,teachingClassCode);
             return Result.success(null);
 
         }finally {
@@ -73,7 +74,7 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
     }
 
     @Async
-    public void asynSaveSelection(String studentIdentifier, String teachingClassCode) {
+    public void asyncSaveSelection(String studentIdentifier, String teachingClassCode) {
         try {
             // 检查是否已经选过
             boolean exists = enrollmentMapper.checkIfStudentHasSelectedCourse(studentIdentifier,teachingClassCode);
@@ -99,6 +100,74 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
             //回滚Redis操作
             courseCacheService.increaseCourseStock(teachingClassCode);
             courseCacheService.removeStudentFromCourse(studentIdentifier,teachingClassCode);
+        }
+    }
+
+    //退课功能
+    @Transactional
+    public Result<Void> withdrawCourse(String studentIdentifier, String teachingClassCode){
+        //检查是否已选课程
+        if (!courseCacheService.isStudentInCourse(teachingClassCode,studentIdentifier)){
+            return Result.failure(new CommonException("学生尚未选择该课程"));
+        }
+
+        //获取分布式锁
+        boolean locked = courseCacheService.tryLock(teachingClassCode,30);
+        if(!locked){
+            return Result.failure(new CommonException("系统繁忙,请稍后再试"));
+        }
+
+        //减少库存
+        try {
+            //检查库存是否有余量
+            Integer stock = courseCacheService.getCourseStock(teachingClassCode);
+            if(stock == null){
+                //从数据库中加载数据
+                try {
+                    TeachingClass teachingClass = teachingClassMapper.selectOne(new QueryWrapper<TeachingClass>().eq("teaching_class_code", teachingClassCode));
+                    stock = teachingClass.getCurrentCapacity();
+                    courseCacheService.initCourseStockCache(teachingClassCode,stock);
+                }catch (Exception e){
+                    return Result.failure(e);
+                }
+            }
+
+            courseCacheService.increaseCourseStock(teachingClassCode);
+            courseCacheService.removeStudentFromCourse(studentIdentifier,teachingClassCode);
+
+
+            //异步写入数据库
+            asyncWithdrawSelection(studentIdentifier,teachingClassCode);
+            return Result.success(null);
+        }finally {
+            //释放锁
+            courseCacheService.releaseLock(teachingClassCode);
+        }
+    }
+
+    @Async
+    public void asyncWithdrawSelection(String studentIdentifier, String teachingClassCode) {
+        try {
+            // 检查是否已经选过
+            boolean exists = enrollmentMapper.checkIfStudentHasSelectedCourse(studentIdentifier,teachingClassCode);
+            if(!exists){
+                //回滚Redis操作
+                courseCacheService.reduceCourseStock(teachingClassCode);
+                courseCacheService.addStudentToCourse(studentIdentifier,teachingClassCode);
+                return;
+            }
+
+            //删除选课记录
+            enrollmentMapper.delete(new QueryWrapper<Enrollment>().eq("student_identifier", studentIdentifier)
+                    .eq("teaching_class_code", teachingClassCode));
+
+            //更新选课已选人数
+            teachingClassMapper.increaseCurrentCapacity(teachingClassCode);
+        }catch (Exception e){
+            log.error("异步保存退课记录失败:{}",e.getMessage());
+            //回滚Redis操作
+            courseCacheService.reduceCourseStock(teachingClassCode);
+            courseCacheService.addStudentToCourse(studentIdentifier,teachingClassCode);
         }
     }
 }
