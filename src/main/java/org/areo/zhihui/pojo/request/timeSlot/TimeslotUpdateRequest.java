@@ -5,11 +5,12 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.List;
 
 @Data
-public class TimeSlotUpdateRequest {
+public class TimeslotUpdateRequest {
     @NotEmpty
     @NotNull
     @Schema(description = "时间槽id列表")
@@ -17,6 +18,9 @@ public class TimeSlotUpdateRequest {
     @NotNull
     @Schema(description = "时间槽名称")
     private String name;
+    @NotNull
+    @Schema(description = "时间槽星期几")
+    private DayOfWeek dayOfWeek;
     @NotNull
     @Schema(description = "时间槽开始时间")
     private LocalTime startTime;

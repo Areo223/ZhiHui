@@ -4,10 +4,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.time.DayOfWeek;
 import java.time.LocalTime;
 
 @Data
-public class TimeSlotAddRequest {
+public class TimeslotAddRequest {
     @NotNull
     @Schema(description = "时间槽名称")
     private String name;
@@ -17,4 +18,7 @@ public class TimeSlotAddRequest {
     @NotNull
     @Schema(description = "时间槽结束时间")
     private LocalTime endTime;
+    @NotNull
+    @Schema(description = "时间槽星期几")
+    private DayOfWeek dayOfWeek;
 }

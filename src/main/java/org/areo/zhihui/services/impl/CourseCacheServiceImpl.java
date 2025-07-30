@@ -24,50 +24,50 @@ public class CourseCacheServiceImpl implements CourseCacheService {
     }
 
     //初始化课程库存缓存
-    public void initCourseStockCache(String teachingClassCode, Integer capacity){
-        redisTemplate.opsForHash().put(COURSE_CACHE_KEY+ teachingClassCode,"stock",capacity);
+    public void initCourseStockCache(String courseOfferingId, Integer capacity){
+        redisTemplate.opsForHash().put(COURSE_CACHE_KEY+ courseOfferingId,"stock",capacity);
     }
 
     //获取课程缓存
-    public Integer getCourseStock(String teachingClassCodeeId){
-        Object stock = redisTemplate.opsForHash().get(COURSE_CACHE_KEY + teachingClassCodeeId, "stock");
+    public Integer getCourseStock(String courseOfferingId){
+        Object stock = redisTemplate.opsForHash().get(COURSE_CACHE_KEY + courseOfferingId, "stock");
         return stock !=null ? Integer.parseInt(stock.toString()):null;
     }
 
     //减少库存方法
-    public boolean reduceCourseStock(String teachingClassCode){
-        return redisTemplate.opsForHash().increment(COURSE_CACHE_KEY+ teachingClassCode,"stock",-1L)>0;
+    public boolean reduceCourseStock(String courseOfferingId){
+        return redisTemplate.opsForHash().increment(COURSE_CACHE_KEY+ courseOfferingId,"stock",-1L)>0;
 
     }
     //增加库存方法
-    public boolean increaseCourseStock(String teachingClassCode){
-        return  redisTemplate.opsForHash().increment(COURSE_CACHE_KEY+ teachingClassCode,"stock",1L)>0;
+    public boolean increaseCourseStock(String courseOfferingId){
+        return  redisTemplate.opsForHash().increment(COURSE_CACHE_KEY+ courseOfferingId,"stock",1L)>0;
     }
 
     //添加学生到课程中
-    public Long addStudentToCourse(String teachingClassCode, String studentIdentifier){
-        return redisTemplate.opsForSet().add(COURSE_STUDENTS_KEY+ teachingClassCode, studentIdentifier);
+    public Long addStudentToCourse(String courseOfferingId, String studentIdentifier){
+        return redisTemplate.opsForSet().add(COURSE_STUDENTS_KEY+ courseOfferingId, studentIdentifier);
     }
 
     //从课程中移除学生
-    public Long removeStudentFromCourse(String teachingClassCode, String studentIdentifier){
-        return redisTemplate.opsForSet().remove(COURSE_STUDENTS_KEY+ teachingClassCode, studentIdentifier);
+    public Long removeStudentFromCourse(String teachingClassCode, String courseOfferingId){
+        return redisTemplate.opsForSet().remove(COURSE_STUDENTS_KEY+ teachingClassCode, courseOfferingId);
     }
 
     //检查学生是否已选课程
-    public boolean isStudentInCourse(String teachingClassCode, String studentIdentifier){
-        return Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(COURSE_STUDENTS_KEY + teachingClassCode, studentIdentifier));
+    public boolean isStudentInCourse(String courseOfferingId, String studentIdentifier){
+        return Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(COURSE_STUDENTS_KEY + courseOfferingId, studentIdentifier));
     }
 
     //获取课程已选学生数量
-    public Long getCourseStudentCount(String teachingClassCode){
-        return redisTemplate.opsForSet().size(COURSE_STUDENTS_KEY+ teachingClassCode);
+    public Long getCourseStudentCount(String courseOfferingId){
+        return redisTemplate.opsForSet().size(COURSE_STUDENTS_KEY+ courseOfferingId);
     }
 
     //获取分布式锁
-    public Boolean tryLock(String teachingClassCode, long expireSeconds){
+    public Boolean tryLock(String courseOfferingId, long expireSeconds){
         return stringRedisTemplate.opsForValue().setIfAbsent(
-                LOCK_KEY+ teachingClassCode,
+                LOCK_KEY+ courseOfferingId,
                 "1",
                 expireSeconds,
                 TimeUnit.SECONDS
@@ -75,7 +75,7 @@ public class CourseCacheServiceImpl implements CourseCacheService {
     }
 
     //释放分布式锁
-    public Boolean releaseLock(String teachingClassCode){
-        return stringRedisTemplate.delete(LOCK_KEY+ teachingClassCode);
+    public Boolean releaseLock(String courseOfferingId){
+        return stringRedisTemplate.delete(LOCK_KEY+ courseOfferingId);
     }
 }

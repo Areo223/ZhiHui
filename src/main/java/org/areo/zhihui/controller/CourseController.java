@@ -30,7 +30,7 @@ public class CourseController {
     @RequiresRole(RoleEnum.ADMIN)
     public ResultJson addCourse(@Valid @RequestBody CourseAddRequest request) {
         Course course = new Course();
-        BeanUtils.copyProperties(request,course,Course.class);
+        BeanUtils.copyProperties(request,course);
         return courseService.addCourse(course).toJson();
     }
 
@@ -38,7 +38,6 @@ public class CourseController {
     @DeleteMapping("/delete")
     @RequiresRole(RoleEnum.ADMIN)
     public ResultJson deleteCourse(@Valid @RequestBody CourseBaseRequest request) {
-
         return courseService.deleteCourse(request.getId()).toJson();
     }
 
@@ -47,7 +46,7 @@ public class CourseController {
     @RequiresRole(RoleEnum.ADMIN)
     public ResultJson updateCourse(@Valid @RequestBody CourseUptRequest request) {
         Course course = new Course();
-        BeanUtils.copyProperties(request,course,Course.class);
+        BeanUtils.copyProperties(request,course);
         return courseService.updateCourse(course).toJson();
     }
 

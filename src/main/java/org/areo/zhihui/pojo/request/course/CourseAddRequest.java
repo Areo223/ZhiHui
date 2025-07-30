@@ -29,12 +29,15 @@ public class CourseAddRequest {
     @Size(max = 200, message = "课程描述长度不能超过200")
     @Schema(description = "课程描述", example = "这是一门介绍Java编程的课程")
     private String courseDesc;
-    
-    @Nullable
-    @Schema(description = "教师ID", example = "1")
-    private Integer teacherId;
 
-    @Nullable
-    @Schema(description = "开课状态", example = "0为未开课，1为开课,-1为已结课")
-    private CourseStatusEnum semester;
+    // 课程总学时
+    private Integer totalHours;
+    // 课程总周数
+    private Integer weeklyHours;
+    // 学分
+    private Integer credit;
+    // 考试时间
+    private String examTime;
+    // 课程状态
+    private CourseStatusEnum status;
 }

@@ -4,16 +4,14 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.areo.zhihui.exception.CommonException;
+import org.areo.zhihui.mapper.CourseOfferingMapper;
 import org.areo.zhihui.mapper.EnrollmentMapper;
-import org.areo.zhihui.mapper.TeachingClassMapper;
 import org.areo.zhihui.pojo.dto.Result;
+import org.areo.zhihui.pojo.entity.CourseOffering;
 import org.areo.zhihui.pojo.entity.Enrollment;
-import org.areo.zhihui.pojo.entity.TeachingClass;
 import org.areo.zhihui.services.CourseCacheService;
 import org.areo.zhihui.services.CourseSelectionService;
 import org.areo.zhihui.utils.enums.SemesterEnum;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -24,31 +22,31 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class CourseSelectionServiceImpl implements CourseSelectionService {
     private final CourseCacheService courseCacheService;
-    private final TeachingClassMapper teachingClassMapper;
+    private final CourseOfferingMapper courseOfferingMapper;
     private final EnrollmentMapper enrollmentMapper;
 
     @Transactional
-    public Result<Void> selectCourse(String studentIdentifier, String teachingClassCode){
+    public Result<Void> selectCourse(String studentIdentifier, String courseOfferingId){
         //检查是否已经选课
-        if (courseCacheService.isStudentInCourse(teachingClassCode,studentIdentifier)){
+        if (courseCacheService.isStudentInCourse(courseOfferingId,studentIdentifier)){
             return Result.failure(new CommonException("已选过该课程"));
         }
 
         //获取分布式锁
-        boolean locked = courseCacheService.tryLock(teachingClassCode,30);
+        boolean locked = courseCacheService.tryLock(courseOfferingId,30);
         if(!locked){
             return Result.failure(new CommonException("系统繁忙,请稍后重试"));
         }
 
         try {
             //检查库存是否有余量
-            Integer stock = courseCacheService.getCourseStock(teachingClassCode);
+            Integer stock = courseCacheService.getCourseStock(courseOfferingId);
             if(stock == null){
                 //从数据库中加载数据
                 try {
-                    TeachingClass teachingClass = teachingClassMapper.selectOne(new QueryWrapper<TeachingClass>().eq("teaching_class_code", teachingClassCode));
-                    stock = teachingClass.getCurrentCapacity();
-                    courseCacheService.initCourseStockCache(teachingClassCode,stock);
+                    CourseOffering courseOffering = courseOfferingMapper.selectOne(new QueryWrapper<CourseOffering>().eq("id", courseOfferingId));
+                    stock = courseOffering.getCurrentCapacity();
+                    courseCacheService.initCourseStockCache(courseOfferingId,stock);
                 }catch (Exception e){
                     return Result.failure(e);
                 }
@@ -59,60 +57,59 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
             }
 
             //扣减库存
-            courseCacheService.reduceCourseStock(teachingClassCode);
-            courseCacheService.addStudentToCourse(teachingClassCode,studentIdentifier);
+            courseCacheService.reduceCourseStock(courseOfferingId);
+            courseCacheService.addStudentToCourse(courseOfferingId,studentIdentifier);
 
 
             //异步写入数据库
-            asyncSaveSelection(studentIdentifier,teachingClassCode);
+            asyncSaveSelection(studentIdentifier,courseOfferingId);
             return Result.success(null);
 
         }finally {
             //释放锁
-            courseCacheService.releaseLock(teachingClassCode);
+            courseCacheService.releaseLock(courseOfferingId);
         }
     }
 
     @Async
-    public void asyncSaveSelection(String studentIdentifier, String teachingClassCode) {
+    public void asyncSaveSelection(String studentIdentifier, String courseOfferingId) {
         try {
             // 检查是否已经选过
-            boolean exists = enrollmentMapper.checkIfStudentHasSelectedCourse(studentIdentifier,teachingClassCode);
+            boolean exists = enrollmentMapper.checkIfStudentHasSelectedCourse(studentIdentifier,courseOfferingId);
             if(exists){
                 //回滚Redis操作
-                courseCacheService.increaseCourseStock(teachingClassCode);
-                courseCacheService.removeStudentFromCourse(studentIdentifier,teachingClassCode);
+                courseCacheService.increaseCourseStock(courseOfferingId);
+                courseCacheService.removeStudentFromCourse(studentIdentifier,courseOfferingId);
                 return;
             }
 
             //插入选课记录
             Enrollment enrollment = new Enrollment();
             enrollment.setSemester(SemesterEnum.semesterSet());
-            //TODO:处理课程的id和编号问题
             enrollment.setStudentIdentifier(studentIdentifier);
-            enrollment.setTeachingClassCode(teachingClassCode);
+            enrollment.setCourseOfferingId(courseOfferingId);
             enrollmentMapper.insert(enrollment);
 
             //更新选课已选人数
-            teachingClassMapper.reduceCurrentCapacity(teachingClassCode);
+            courseOfferingMapper.reduceCurrentCapacity(courseOfferingId);
         }catch (Exception e){
             log.error("异步保存选课记录失败:{}",e.getMessage());
             //回滚Redis操作
-            courseCacheService.increaseCourseStock(teachingClassCode);
-            courseCacheService.removeStudentFromCourse(studentIdentifier,teachingClassCode);
+            courseCacheService.increaseCourseStock(courseOfferingId);
+            courseCacheService.removeStudentFromCourse(studentIdentifier,courseOfferingId);
         }
     }
 
     //退课功能
     @Transactional
-    public Result<Void> withdrawCourse(String studentIdentifier, String teachingClassCode){
+    public Result<Void> withdrawCourse(String studentIdentifier, String courseOfferingId){
         //检查是否已选课程
-        if (!courseCacheService.isStudentInCourse(teachingClassCode,studentIdentifier)){
+        if (!courseCacheService.isStudentInCourse(courseOfferingId,studentIdentifier)){
             return Result.failure(new CommonException("学生尚未选择该课程"));
         }
 
         //获取分布式锁
-        boolean locked = courseCacheService.tryLock(teachingClassCode,30);
+        boolean locked = courseCacheService.tryLock(courseOfferingId,30);
         if(!locked){
             return Result.failure(new CommonException("系统繁忙,请稍后再试"));
         }
@@ -120,54 +117,54 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
         //减少库存
         try {
             //检查库存是否有余量
-            Integer stock = courseCacheService.getCourseStock(teachingClassCode);
+            Integer stock = courseCacheService.getCourseStock(courseOfferingId);
             if(stock == null){
                 //从数据库中加载数据
                 try {
-                    TeachingClass teachingClass = teachingClassMapper.selectOne(new QueryWrapper<TeachingClass>().eq("teaching_class_code", teachingClassCode));
-                    stock = teachingClass.getCurrentCapacity();
-                    courseCacheService.initCourseStockCache(teachingClassCode,stock);
+                    CourseOffering courseOffering = courseOfferingMapper.selectOne(new QueryWrapper<CourseOffering>().eq("id", courseOfferingId));
+                    stock = courseOffering.getCurrentCapacity();
+                    courseCacheService.initCourseStockCache(courseOfferingId,stock);
                 }catch (Exception e){
                     return Result.failure(e);
                 }
             }
 
-            courseCacheService.increaseCourseStock(teachingClassCode);
-            courseCacheService.removeStudentFromCourse(studentIdentifier,teachingClassCode);
+            courseCacheService.increaseCourseStock(courseOfferingId);
+            courseCacheService.removeStudentFromCourse(studentIdentifier,courseOfferingId);
 
 
             //异步写入数据库
-            asyncWithdrawSelection(studentIdentifier,teachingClassCode);
+            asyncWithdrawSelection(studentIdentifier,courseOfferingId);
             return Result.success(null);
         }finally {
             //释放锁
-            courseCacheService.releaseLock(teachingClassCode);
+            courseCacheService.releaseLock(courseOfferingId);
         }
     }
 
     @Async
-    public void asyncWithdrawSelection(String studentIdentifier, String teachingClassCode) {
+    public void asyncWithdrawSelection(String studentIdentifier, String courseOfferingId) {
         try {
             // 检查是否已经选过
-            boolean exists = enrollmentMapper.checkIfStudentHasSelectedCourse(studentIdentifier,teachingClassCode);
+            boolean exists = enrollmentMapper.checkIfStudentHasSelectedCourse(studentIdentifier,courseOfferingId);
             if(!exists){
                 //回滚Redis操作
-                courseCacheService.reduceCourseStock(teachingClassCode);
-                courseCacheService.addStudentToCourse(studentIdentifier,teachingClassCode);
+                courseCacheService.reduceCourseStock(courseOfferingId);
+                courseCacheService.addStudentToCourse(studentIdentifier,courseOfferingId);
                 return;
             }
 
             //删除选课记录
             enrollmentMapper.delete(new QueryWrapper<Enrollment>().eq("student_identifier", studentIdentifier)
-                    .eq("teaching_class_code", teachingClassCode));
+                    .eq("course_offering_id", courseOfferingId));
 
             //更新选课已选人数
-            teachingClassMapper.increaseCurrentCapacity(teachingClassCode);
+            courseOfferingMapper.increaseCurrentCapacity(courseOfferingId);
         }catch (Exception e){
             log.error("异步保存退课记录失败:{}",e.getMessage());
             //回滚Redis操作
-            courseCacheService.reduceCourseStock(teachingClassCode);
-            courseCacheService.addStudentToCourse(studentIdentifier,teachingClassCode);
+            courseCacheService.reduceCourseStock(courseOfferingId);
+            courseCacheService.addStudentToCourse(studentIdentifier,courseOfferingId);
         }
     }
 }

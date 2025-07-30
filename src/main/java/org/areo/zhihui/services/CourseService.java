@@ -2,8 +2,9 @@ package org.areo.zhihui.services;
 
 import org.areo.zhihui.pojo.dto.Result;
 import org.areo.zhihui.pojo.entity.Course;
+import org.areo.zhihui.pojo.vo.CourseOfferingVO;
 import org.areo.zhihui.pojo.vo.CourseVO;
-import org.areo.zhihui.pojo.vo.TeachingClassVO;
+import org.areo.zhihui.pojo.vo.TeachingSessionVO;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,5 +19,5 @@ public interface CourseService {
 
     Result<Void> updateCourse(Course course);
 
-    Result<List<TeachingClassVO>> getSelectedCourse();
+    Result<List<CourseOfferingVO>> getSelectedCourse();
 }

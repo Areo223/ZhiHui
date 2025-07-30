@@ -2,11 +2,11 @@ package org.areo.zhihui.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.areo.zhihui.exception.CommonException;
-import org.areo.zhihui.mapper.TimeSlotMapper;
+import org.areo.zhihui.mapper.TimeslotMapper;
 import org.areo.zhihui.pojo.dto.Result;
-import org.areo.zhihui.pojo.entity.TimeSlot;
+import org.areo.zhihui.pojo.entity.Timeslot;
 import org.areo.zhihui.pojo.vo.TimeSlotVO;
-import org.areo.zhihui.services.TimeSlotService;
+import org.areo.zhihui.services.TimeslotService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,36 +16,35 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class TimeSlotServiceImpl implements TimeSlotService {
+public class TimeslotServiceImpl implements TimeslotService {
 
-    private final TimeSlotMapper timeSlotMapper;
-
+    private final TimeslotMapper timeslotMapper;
 
     @Override
-    public Result<List<TimeSlotVO>> getAllTimeSlot() {
-        List<TimeSlot> timeSlotList = timeSlotMapper.selectList(null);
-        List<TimeSlotVO> timeSlotVOList = timeSlotList.stream().map(timeSlot -> {
+    public Result<List<TimeSlotVO>> getAllTimeslot() {
+        List<Timeslot> timeslotList = timeslotMapper.selectList(null);
+        List<TimeSlotVO> timeSlotVOList = timeslotList.stream().map(timeslot -> {
             TimeSlotVO vo = new TimeSlotVO();
-            BeanUtils.copyProperties(timeSlot, vo);
+            BeanUtils.copyProperties(timeslot, vo);
             return vo;
         }).collect(Collectors.toList());
         return Result.success(timeSlotVOList);
     }
 
     @Override
-    public Result<TimeSlotVO> addTimeSlot(TimeSlot timeSlot) {
-        boolean success = timeSlotMapper.insert(timeSlot) > 0;
-        if (!success||timeSlot.getId()==null) {
+    public Result<TimeSlotVO> addTimeslot(Timeslot timeslot) {
+        boolean success = timeslotMapper.insert(timeslot) > 0;
+        if (!success||timeslot.getId()==null) {
             return Result.failure(new CommonException("添加失败"));
         }
         TimeSlotVO vo = new TimeSlotVO();
-        BeanUtils.copyProperties(timeSlot, vo);
+        BeanUtils.copyProperties(timeslot, vo);
         return Result.success(vo);
     }
 
     @Override
-    public Result<Void> deleteTimeSlot(List<Integer> ids) {
-        boolean success = timeSlotMapper.deleteByIds(ids) > 0;
+    public Result<Void> deleteTimeslot(List<Integer> ids) {
+        boolean success = timeslotMapper.deleteByIds(ids) > 0;
         if (!success) {
             return Result.failure(new CommonException("删除失败"));
         }
@@ -53,22 +52,22 @@ public class TimeSlotServiceImpl implements TimeSlotService {
     }
 
     @Override
-    public Result<TimeSlotVO> updateTimeSlot(TimeSlot timeSlot) {
-        boolean success = timeSlotMapper.updateById(timeSlot) > 0;
+    public Result<TimeSlotVO> updateTimeslot(Timeslot timeslot) {
+        boolean success = timeslotMapper.updateById(timeslot) > 0;
         if (!success) {
             return Result.failure(new CommonException("更新失败"));
         }
         TimeSlotVO vo = new TimeSlotVO();
-        BeanUtils.copyProperties(timeSlot, vo);
+        BeanUtils.copyProperties(timeslot, vo);
         return Result.success(vo);
     }
 
     @Override
-    public Result<List<TimeSlotVO>> getTimeSlotByIds(List<Integer> ids) {
-        List<TimeSlot> timeSlotList = timeSlotMapper.selectByIds(ids);
-        List<TimeSlotVO> timeSlotVOList = timeSlotList.stream().map(timeSlot -> {
+    public Result<List<TimeSlotVO>> getTimeslotByIds(List<Integer> ids) {
+        List<Timeslot> timeslotList = timeslotMapper.selectByIds(ids);
+        List<TimeSlotVO> timeSlotVOList = timeslotList.stream().map(timeslot -> {
             TimeSlotVO vo = new TimeSlotVO();
-            BeanUtils.copyProperties(timeSlot, vo);
+            BeanUtils.copyProperties(timeslot, vo);
             return vo;
         }).collect(Collectors.toList());
         return Result.success(timeSlotVOList);

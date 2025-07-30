@@ -5,8 +5,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface CourseSelectionService {
-    Result<Void> selectCourse(String studentIdentifier, String teachingClassCode);
-    void asyncSaveSelection(String studentIdentifier, String teachingClassCode);
-    Result<Void> withdrawCourse(String studentIdentifier, String teachingClassCode);
-    void asyncWithdrawSelection(String studentIdentifier, String teachingClassCode);
+    Result<Void> selectCourse(String studentIdentifier, String courseOfferingId);
+    void asyncSaveSelection(String studentIdentifier, String courseOfferingId);
+    Result<Void> withdrawCourse(String studentIdentifier, String courseOfferingId);
+    void asyncWithdrawSelection(String studentIdentifier, String courseOfferingId);
 }

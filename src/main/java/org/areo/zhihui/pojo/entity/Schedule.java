@@ -8,7 +8,6 @@ import lombok.Data;
 public class Schedule extends BaseEntity{
     private Integer id;
     private Integer teachingClassId;
-    private Integer dayOfWeek;
     private Integer timeSlotId;
     private Integer classroomId;
     private Integer singleDoubleWeek;

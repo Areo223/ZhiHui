@@ -8,7 +8,7 @@ public class Enrollment extends BaseEntity{
     //对应学生identifier
     private String studentIdentifier;
     //对应课程编号
-    private String teachingClassCode;
+    private String courseOfferingId;
     //成绩
     private String grade;
     //学期

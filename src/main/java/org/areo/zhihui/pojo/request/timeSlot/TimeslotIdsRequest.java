@@ -8,7 +8,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class TimeSlotIdsRequest {
+public class TimeslotIdsRequest {
     @NotEmpty
     @NotNull
     @Schema(description = "时间槽id列表")
