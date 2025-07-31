@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.areo.zhihui.mapper.TimeTableMapper">
+
+    <insert id="insert" parameterType="org.areo.zhihui.pojo.dto.TimeTable">
+        INSERT INTO time_table (id, score_hard, score_soft, solver_status)
+            VALUES (#{id}, #{score.hardScore}, #{score.softScore}, #{solverStatus})
+    </insert>
+
+    <update id="updateByIds">
+        UPDATE time_table
+        SET score_hard = #{score.hardScore},
+            score_soft = #{score.softScore},
+            solver_status = #{solverStatus}
+        WHERE id = #{id}
+    </update>
+</mapper>

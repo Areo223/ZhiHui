@@ -1,0 +1,13 @@
+<!-- solverConfig.xml -->
+<solver>
+    <solutionClass>org.areo.zhihui.pojo.dto.TimeTable</solutionClass>
+    <entityClass>org.areo.zhihui.pojo.entity.TeachingSession</entityClass>
+
+    <scoreDirectorFactory>
+        <constraintProviderClass>org.areo.zhihui.services.TimeTableConstraintProvider</constraintProviderClass>
+    </scoreDirectorFactory>
+
+    <termination>
+        <secondsSpentLimit>10</secondsSpentLimit>
+    </termination>
+</solver>

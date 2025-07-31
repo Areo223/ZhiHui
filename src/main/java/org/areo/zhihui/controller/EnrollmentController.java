@@ -16,7 +16,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "选课")
+@Tag(name = "选课模块")
 @RestController
 @RequestMapping("/enrollment")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
