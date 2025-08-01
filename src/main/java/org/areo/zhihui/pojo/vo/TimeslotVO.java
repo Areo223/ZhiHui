@@ -1,12 +1,12 @@
 package org.areo.zhihui.pojo.vo;
 
-import org.springframework.stereotype.Service;
+import lombok.Data;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 
-@Service
-public class TimeSlotVO{
+@Data
+public class TimeslotVO {
     private Integer id;
     private String name;
     private DayOfWeek dayOfWeek;

@@ -41,7 +41,8 @@ public class TeachingSession {
     // 教师不可用时间
     @TableField(exist = false)
     private List<Timeslot> timeslots = new ArrayList<>();
-    // 从数据库加载后初始化对象
+
+    // 填充对象
     public void initPlanningVariables(TimeslotMapper tsMapper, ClassroomMapper crMapper, TeacherUnavailableMapper tuMapper) {
         if (timeslotId != null) {
             this.timeslot = tsMapper.selectById(timeslotId);
@@ -53,6 +54,14 @@ public class TeachingSession {
             if (tuMapper.selectById(teacherId) != null) {
                 this.timeslots = tsMapper.selectByIds(tuMapper.selectById(teacherId).getTimeslotIds());
             }
+        }
+    }
+    public void initPlanningVariables(TimeslotMapper tsMapper, ClassroomMapper crMapper) {
+        if (timeslotId != null) {
+            this.timeslot = tsMapper.selectById(timeslotId);
+        }
+        if (classroomId != null) {
+            this.classroom = crMapper.selectById(classroomId);
         }
     }
 }

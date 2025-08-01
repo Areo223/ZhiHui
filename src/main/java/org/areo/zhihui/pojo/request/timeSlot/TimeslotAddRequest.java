@@ -10,15 +10,15 @@ import java.time.LocalTime;
 @Data
 public class TimeslotAddRequest {
     @NotNull
-    @Schema(description = "时间槽名称")
+    @Schema(description = "时间槽名称",minLength = 1,maxLength = 10,example = "1-2")
     private String name;
     @NotNull
-    @Schema(description = "时间槽开始时间")
+    @Schema(description = "时间槽开始时间",example = "09:00")
     private LocalTime startTime;
     @NotNull
-    @Schema(description = "时间槽结束时间")
+    @Schema(description = "时间槽结束时间",example = "10:00")
     private LocalTime endTime;
     @NotNull
-    @Schema(description = "时间槽星期几")
+    @Schema(description = "时间槽星期几",example = "MONDAY")
     private DayOfWeek dayOfWeek;
 }

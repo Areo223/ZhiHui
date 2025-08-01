@@ -16,11 +16,6 @@ import org.optaplanner.core.api.solver.SolverStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-
-import static org.areo.zhihui.mapper.TimeTableMapper.SINGLETON_TIME_TABLE_ID;
-
 @RestController
 @Tag(name = "排课模块")
 @RequestMapping("/timeTable")
@@ -30,15 +25,15 @@ public class TimeTableController {
     private final TimeTableService timeTableService;
 
     @PostMapping("/testSolve")
-    @Operation(summary = "排课", description = "排课")
-    public ResultJson testSolve(@RequestBody TimeTable problem){
+    @Operation(summary = "测试排课", description = "测试排课,非异步求解,直接返回结果")
+    public ResultJson testSolve(@RequestBody(required = false) TimeTable problem){
         return timeTableService.testSolve(problem).toJson();
     }
 
     @PostMapping("/solve")
     @Operation(summary = "开始排课求解", description = "开始排课求解,异步求解,结果保存在数据库")
-    public ResultJson solve(@RequestBody(required = false) TimeTable problem) {
-        return timeTableService.solve(problem).toJson();
+    public ResultJson solve() {
+        return timeTableService.solve().toJson();
     }
 
     @GetMapping()
@@ -51,6 +46,13 @@ public class TimeTableController {
     @Operation(summary = "停止排课求解", description = "停止排课求解,不是立即停止,而是在求解完成后停止")
     public ResultJson stopSolving() {
         return timeTableService.stopSolving().toJson();
+    }
+
+    //获取当前求解状态
+    @GetMapping("/status")
+    @Operation(summary = "获取当前求解状态", description = "获取当前求解状态")
+    public ResultJson getStatus() {
+        return timeTableService.getStatus().toJson();
     }
 
 }

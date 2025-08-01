@@ -12,6 +12,8 @@ import java.util.function.Function;
 
 @Getter
 public final class Result<T> {
+    //输出value
+    @Getter
     private final T value;
     private final Throwable error;
     private final int errorCode; // 自定义错误码（可选）

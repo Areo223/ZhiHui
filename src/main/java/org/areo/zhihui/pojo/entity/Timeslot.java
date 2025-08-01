@@ -17,6 +17,8 @@ import java.time.LocalTime;
 public class Timeslot{
     @TableId(type = IdType.AUTO)
     private Integer id;
+    @Schema(description = "时间片名称",minLength = 1,maxLength = 10,example = "1-2")
+    private String name;
     private DayOfWeek dayOfWeek;
     @Schema(description = "开始时间",example = "20:00:00")
     private LocalTime startTime;

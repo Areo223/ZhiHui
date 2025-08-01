@@ -22,8 +22,6 @@ public class Course extends BaseEntity {
     private String courseDesc;
     //课程总学时
     private Integer totalHours;
-    //课程总周数
-    private Integer weeklyHours;
 
     //学分
     private Integer credit;

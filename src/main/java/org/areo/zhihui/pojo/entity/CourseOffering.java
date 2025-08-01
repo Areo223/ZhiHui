@@ -22,6 +22,8 @@ public class CourseOffering {
     private String targetGrades;
     //面向学期
     private SemesterEnum targetSemester;
+    //课程总周数
+    private Integer weeks;
     //课程容量
     private Integer maxCapacity;
     //当前容量,创建时默认为最大容量

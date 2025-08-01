@@ -31,6 +31,7 @@ public class TimeslotController {
 
     //根据id查询时间槽信息
     @PostMapping("/getById")
+    @Operation(summary = "根据id查询时间槽信息", description = "根据id查询时间槽信息")
     public ResultJson getTimeslotByIds(@Valid @RequestBody TimeslotIdsRequest request) {
         return timeslotService.getTimeslotByIds(request.getIds()).toJson();
     }

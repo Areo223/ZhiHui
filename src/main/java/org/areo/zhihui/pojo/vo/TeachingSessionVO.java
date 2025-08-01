@@ -1,14 +1,17 @@
 package org.areo.zhihui.pojo.vo;
 
+import lombok.Data;
 import lombok.Getter;
 
-@Getter
+@Data
 public class TeachingSessionVO {
     private Integer id;
     // 课程实例id
     private Integer offeringId;
-    // 时间片id
-    private Integer timeslotId;
-    // 教室id
-    private Integer classroomId;
+    // 教师id
+    private Integer teacherId;
+    // 教室
+    private ClassroomVO classroom;
+    // 时间片
+    private TimeslotVO timeslot;
 }

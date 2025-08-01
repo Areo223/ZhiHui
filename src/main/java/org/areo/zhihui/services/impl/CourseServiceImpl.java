@@ -9,7 +9,6 @@ import org.areo.zhihui.pojo.entity.Class;
 import org.areo.zhihui.pojo.entity.*;
 import org.areo.zhihui.pojo.vo.CourseOfferingVO;
 import org.areo.zhihui.pojo.vo.CourseVO;
-import org.areo.zhihui.pojo.vo.TeachingSessionVO;
 import org.areo.zhihui.services.CourseService;
 import org.areo.zhihui.utils.UserHolder;
 import org.areo.zhihui.utils.enums.RoleEnum;

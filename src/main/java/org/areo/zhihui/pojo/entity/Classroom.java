@@ -8,7 +8,7 @@ import org.areo.zhihui.utils.enums.RoomTypeEnum;
 
 @Data
 @TableName(value = "classroom")
-public class Classroom{
+public class Classroom extends BaseEntity {
     @TableId(type = IdType.AUTO)
     //教室id
     private Integer id;

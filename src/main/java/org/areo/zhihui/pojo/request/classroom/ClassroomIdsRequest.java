@@ -11,6 +11,6 @@ import java.util.List;
 public class ClassroomIdsRequest {
     @NotNull
     @NotEmpty
-    @Schema(description = "教室ID列表",example = "101")
+    @Schema(description = "教室ID列表",example = "[1,2,3]")
     private List<Integer> classroomIds;
 }
