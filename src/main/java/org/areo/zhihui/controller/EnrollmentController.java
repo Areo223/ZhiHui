@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.areo.zhihui.annotation.RequiresRole;
 import org.areo.zhihui.pojo.Restful.ResultJson;
 import org.areo.zhihui.pojo.entity.Enrollment;
+import org.areo.zhihui.pojo.request.GradeAddRequest;
+import org.areo.zhihui.pojo.request.GradeListRequest;
 import org.areo.zhihui.pojo.request.enrollment.EnrollmentAddRequest;
 import org.areo.zhihui.pojo.request.enrollment.EnrollmentBaseRequest;
 import org.areo.zhihui.services.EnrollmentService;
@@ -60,5 +62,31 @@ public class EnrollmentController {
     @GetMapping("/getSelectedCourse")
     public ResultJson getSelectedCourse() {
         return enrollmentService.getSelectedCourse().toJson();
+    }
+
+    @Operation(summary = "教师录入学生成绩",description = "教师录入学生成绩")
+    @RequiresRole(RoleEnum.TEACHER)
+    @PostMapping("/grade")
+    public ResultJson grade(@Valid @RequestBody GradeAddRequest request){
+        return enrollmentService.setGrade(
+                request.getStudentIdentifier(),
+                request.getCourseOfferingId(),
+                request.getGrade()).toJson();
+    }
+
+    @Operation(summary = "教师修改成绩",description = "教师修改学生成绩")
+    @PutMapping("/grade")
+    @RequiresRole(RoleEnum.TEACHER)
+    public ResultJson updateGrade(@Valid @RequestBody GradeAddRequest request){
+        return enrollmentService.updGrade(
+                request.getStudentIdentifier(),
+                request.getCourseOfferingId(),
+                request.getGrade()).toJson();
+    }
+
+    @Operation(summary = "查询学生成绩",description = "查询学生成绩")
+    @GetMapping("/getGrade")
+    public ResultJson getGrade(@Valid @RequestBody GradeListRequest request){
+        return enrollmentService.getGrade(request.getStudentIdentifier(),request.getCourseOfferingId()).toJson();
     }
 }

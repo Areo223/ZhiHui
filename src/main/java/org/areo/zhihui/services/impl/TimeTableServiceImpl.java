@@ -15,8 +15,6 @@ import org.areo.zhihui.pojo.vo.TeachingSessionVO;
 import org.areo.zhihui.pojo.vo.TimeTableVO;
 import org.areo.zhihui.pojo.vo.TimeslotVO;
 import org.areo.zhihui.services.TimeTableService;
-import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;
-import org.optaplanner.core.api.solver.SolutionManager;
 import org.optaplanner.core.api.solver.SolverJob;
 import org.optaplanner.core.api.solver.SolverManager;
 import org.optaplanner.core.api.solver.SolverStatus;
@@ -40,7 +38,6 @@ public class TimeTableServiceImpl implements TimeTableService {
     public static final UUID SINGLETON_SOLVING_ID = UUID.randomUUID();
     private final TimeTableMapper timeTableMapper;
     private final SolverManager<TimeTable, UUID> solverManager;
-    private final SolutionManager<TimeTable, HardSoftScore> solutionManager;
     private final TimeslotMapper timeslotMapper;
     private final ClassroomMapper classroomMapper;
     private final TeachingSessionMapper teachingSessionMapper;

@@ -11,7 +11,6 @@ import org.areo.zhihui.pojo.entity.CourseOffering;
 import org.areo.zhihui.pojo.entity.Enrollment;
 import org.areo.zhihui.services.CourseCacheService;
 import org.areo.zhihui.services.CourseSelectionService;
-import org.areo.zhihui.utils.enums.SemesterEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -85,9 +84,8 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
 
             //插入选课记录
             Enrollment enrollment = new Enrollment();
-            enrollment.setSemester(SemesterEnum.semesterSet());
             enrollment.setStudentIdentifier(studentIdentifier);
-            enrollment.setCourseOfferingId(courseOfferingId);
+            enrollment.setCourseOfferingId(Integer.parseInt(courseOfferingId));
             enrollmentMapper.insert(enrollment);
 
             //更新选课已选人数

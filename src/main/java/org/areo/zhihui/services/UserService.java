@@ -36,5 +36,5 @@ public interface UserService {
 
     Result<QueryVO<Object>> getUsers(Integer pageNum, Integer pageSize, Map<String, Boolean> sorts, UserListRequest.Conditions conditions);
 
-    Result<Object> getUserCount();
+//    Result<Object> getUserCount();
 }

@@ -58,14 +58,14 @@ public class UserController {
     }
 
 
-    // 分组查询,查询各个身份有多少人
-    @Operation(summary = "管理员查询用户数量", description = "查询用户数量")
-    @GetMapping("/getUserCount")
-    @RequiresRole(value = {RoleEnum.ADMIN})
-    public ResultJson getUserCount() {
-        return userService.getUserCount()
-           .toJson(); // 自动转换为 JSON
-    }
+//    // 分组查询,查询各个身份有多少人
+//    @Operation(summary = "管理员查询用户数量", description = "查询用户数量")
+//    @GetMapping("/getUserCount")
+//    @RequiresRole(value = {RoleEnum.ADMIN})
+//    public ResultJson getUserCount() {
+//        return userService.getUserCount()
+//           .toJson(); // 自动转换为 JSON
+//    }
 
 //    //嵌套查询,查询用户信息和身份信息
 //    @Operation(summary = "管理员查询用户信息", description = "查询用户信息")

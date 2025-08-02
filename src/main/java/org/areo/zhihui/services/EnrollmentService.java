@@ -14,4 +14,10 @@ public interface EnrollmentService {
     Result<Void> withdrawCourse(Enrollment enrollment);
 
     Result<List<CourseOfferingVO>> getSelectedCourse();
+
+    Result<Enrollment> setGrade(String studentIdentifier, Integer courseOfferingId, Integer grade);
+
+    Result<Enrollment> getGrade(String studentIdentifier, Integer courseOfferingId);
+
+    Result<Enrollment> updGrade(String studentIdentifier, Integer courseOfferingId, Integer grade);
 }

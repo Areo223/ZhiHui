@@ -1,7 +1,5 @@
 package org.areo.zhihui.exception;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.areo.zhihui.annotation.ErrorCode;
 
 public class ValidatorException{

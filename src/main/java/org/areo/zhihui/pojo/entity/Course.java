@@ -1,11 +1,8 @@
 package org.areo.zhihui.pojo.entity;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import org.areo.zhihui.utils.enums.CourseStatusEnum;
 import org.areo.zhihui.utils.enums.CourseTypeEnum;
-
-import java.util.List;
 
 @Data
 public class Course extends BaseEntity {

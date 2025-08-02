@@ -3,16 +3,10 @@ package org.areo.zhihui.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.areo.zhihui.mapper.TimeTableMapper;
 import org.areo.zhihui.pojo.Restful.ResultJson;
 import org.areo.zhihui.pojo.dto.TimeTable;
 
 import org.areo.zhihui.services.TimeTableService;
-import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;
-import org.optaplanner.core.api.solver.SolutionManager;
-import org.optaplanner.core.api.solver.SolverJob;
-import org.optaplanner.core.api.solver.SolverManager;
-import org.optaplanner.core.api.solver.SolverStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

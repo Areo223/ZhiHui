@@ -12,7 +12,4 @@
         where user.id = #{id}
 
     </select>
-    <select id="getUserCount" resultType="java.util.Map">
-        select role,count(*) as user_count from user group by role order by role asc
-    </select>
 </mapper>

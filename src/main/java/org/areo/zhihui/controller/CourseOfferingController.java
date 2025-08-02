@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.areo.zhihui.pojo.Restful.ResultJson;
-import org.areo.zhihui.pojo.dto.Result;
 import org.areo.zhihui.pojo.entity.CourseOffering;
 import org.areo.zhihui.pojo.request.CourseOfferingAddRequest;
 import org.areo.zhihui.pojo.request.CourseOfferingIdsRequest;

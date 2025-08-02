@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.areo.zhihui.annotation.RequiresRole;
 import org.areo.zhihui.exception.UserException.UserAccessDeniedException;
-import org.areo.zhihui.utils.JwtUtils;
 import org.areo.zhihui.utils.UserHolder;
 import org.areo.zhihui.utils.enums.RoleEnum;
 import org.aspectj.lang.ProceedingJoinPoint;

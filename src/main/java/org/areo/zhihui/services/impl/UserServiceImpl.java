@@ -373,13 +373,13 @@ public class UserServiceImpl implements UserService {
 
     }
 
-    @Override
-    public Result<Object> getUserCount() {
-        //查询每个角色的用户数
-        Map<String, Long> userCountMap = userMapper.getUserCount();
-        log.info("用户数量查询成功，结果: {}", userCountMap);
-        return Result.success(userCountMap);
-    }
+//    @Override
+//    public Result<Object> getUserCount() {
+//        //查询每个角色的用户数
+//        Map<String, Long> userCountMap = userMapper.getUserCount();
+//        log.info("用户数量查询成功，结果: {}", userCountMap);
+//        return Result.success(userCountMap);
+//    }
 
     private Result<Void> checkPasswordStrength(String password) {
         log.debug("检查密码强度");

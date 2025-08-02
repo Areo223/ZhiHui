@@ -8,8 +8,6 @@ import org.optaplanner.core.api.score.stream.ConstraintProvider;
 import org.optaplanner.core.api.score.stream.Joiners;
 import org.springframework.stereotype.Service;
 
-import java.time.temporal.ChronoUnit;
-
 @Service
 public class TimeTableConstraintProvider implements ConstraintProvider {
     @Override

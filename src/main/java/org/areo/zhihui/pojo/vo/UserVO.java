@@ -1,7 +1,6 @@
 package org.areo.zhihui.pojo.vo;
 
 import lombok.Data;
-import org.areo.zhihui.utils.enums.LockedEnum;
 import org.areo.zhihui.utils.enums.RoleEnum;
 
 @Data

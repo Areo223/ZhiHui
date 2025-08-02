@@ -1,6 +1,5 @@
 package org.areo.zhihui.pojo.entity;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.util.List;
