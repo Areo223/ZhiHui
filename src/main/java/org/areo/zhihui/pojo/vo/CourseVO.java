@@ -18,9 +18,6 @@ public class CourseVO {
     private String courseDesc;
     //课程总学时
     private Integer totalHours;
-    //课程总周数
-    private Integer weeklyHours;
-
     //学分
     private Integer credit;
     //考试时间

@@ -12,6 +12,7 @@ public class CourseOfferingAddRequest {
     //课程id
     private Integer courseId;
     //授课教师
+    @Schema(description = "授课教师",example = "1")
     private Integer teacherId;
     //面向专业
     private String targetMajors;
@@ -19,8 +20,13 @@ public class CourseOfferingAddRequest {
     private String targetGrades;
     //面向学期
     private SemesterEnum targetSemester;
+    //课程总周数
+    @Schema(description = "课程总周数",minimum = "1",maximum = "16",example = "8")
+    @Min(value = 1,message = "课程总周数不能小于1")
+    @Max(value = 16,message = "课程总周数不能大于16")
+    private Integer weeks;
     //课程容量,最小为0,最大500
-    @Schema(name = "课程容量",minimum = "0",maximum = "500",example = "30")
+    @Schema(description = "课程容量",minimum = "0",maximum = "500",example = "30")
     @Min(value = 0,message = "课程容量不能小于0")
     @Max(value = 500,message = "课程容量不能大于500")
     private Integer maxCapacity;

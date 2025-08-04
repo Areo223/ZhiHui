@@ -56,7 +56,7 @@ public class CourseOfferingServiceImpl implements CourseOfferingService {
             createTeachingSessions(courseOffering);
         } catch (Exception e) {
             log.error("创建教学班失败: {}", e.getMessage());
-            return Result.failure(e);
+            throw new CommonException("创建教学班失败");
         }
 
 

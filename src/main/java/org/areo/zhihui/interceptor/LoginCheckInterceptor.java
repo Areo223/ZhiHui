@@ -1,6 +1,5 @@
 package org.areo.zhihui.interceptor;
 
-import com.alibaba.fastjson.JSONObject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +21,8 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+
+
 @Slf4j
 @Component
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
@@ -30,84 +31,74 @@ public class LoginCheckInterceptor implements HandlerInterceptor {
     private final UserMapper userMapper;
 
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-
         String url = request.getRequestURI();
-        log.info("请求的url为:{}",url);
+        log.info("请求的url为: {}", url);
 
-
+        // 获取并验证Token
         String token = request.getHeader("Authorization");
+        Result<User> result = checkToken(token);
 
-        if (!StringUtils.hasLength(token)){
-            log.info("请求头token为空,返回未登录信息");
-
-            response.getWriter().write(Restful.unauthorized("未登录").toJsonString());
+        // 根据验证结果处理
+        if (result.isSuccess()) {
+            log.info("令牌合法，用户 {} 已放行", UserHolder.getUserId());
+            return true;
+        } else {
+            log.warn("拦截请求：{}，原因：{}", url, result.getError().getMessage());
+            sendErrorResponse(response, result);
             return false;
         }
-
-        try {
-            // 去除可能的前缀（如"Bearer "）
-            if (token.startsWith("Bearer ")) {
-                token = token.substring(7);
-            }
-            jwtUtils.verifyToken(token);
-        }catch (JwtErrorException e){
-            e.printStackTrace();
-            log.info("解析令牌失败,返回未登录错误信息");
-
-
-            String notLogin = JSONObject.toJSONString(Restful.unauthorized("未登录").toJsonString());
-            response.getWriter().write(notLogin);
-            return false;
-        }
-
-        log.info("令牌合法,放行");
-
-
-        User user = (jwtUtils.parseToken(token));
-        UserHolder.setUser(userMapper.selectById(user.getId()));//设置线程局部变量user
-        return true;
     }
 
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
-                                Object handler, Exception ex) {
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
         UserHolder.removeUser();
     }
 
-    /**
-     * Token验证逻辑（返回Result）
-     */
     private Result<User> checkToken(String token) {
-        // 1. 检查Token是否存在
+        // 检查Token是否存在
         if (!StringUtils.hasLength(token)) {
-            return Result.failure(
-                    new UnauthorizedException("未提供有效的Token"),
-                    Restful.UNAUTHORIZED_CODE
-            );
+            return Result.failure(new UnauthorizedException("未提供有效的Token"));
         }
 
-        // 2. 解析Token
+        // 去除Bearer前缀
+        String jwtToken = token;
+        if (token.startsWith("Bearer ")) {
+            jwtToken = token.substring(7).trim();
+        }
+
+        // 验证并解析Token
         try {
-            String jwtToken = token.substring(7).trim();
             User user = jwtUtils.parseToken(jwtToken);
-            UserHolder.setUser(userMapper.selectById(user.getId()));
-            log.info("用户 {} 认证通过", user.getName());
-            return Result.success(user);
-        } catch (UnauthorizedException e) {
-            return Result.failure(e, Restful.UNAUTHORIZED_CODE);
+            User dbUser = userMapper.selectById(user.getId());
+            if (dbUser == null) {
+                return Result.failure(new UnauthorizedException("用户不存在"));
+            }
+
+            // 将用户信息存入线程副本
+            UserHolder.setUser(dbUser);
+            return Result.success(null);
+        } catch (JwtErrorException e) {
+            return Result.failure(new UnauthorizedException("TOKEN验证失败: " + e.getMessage()));
         }
     }
 
     /**
-     * 发送错误响应（使用Result格式）
+     * 发送统一格式的错误响应
      */
-    private void sendErrorResponse(HttpServletResponse response,
-                                   Throwable error, int code) throws IOException {
-        response.setStatus(code);
+    private void sendErrorResponse(HttpServletResponse response, Result<?> result) throws IOException {
+
+        // 设置响应参数
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        response.getWriter().write(
-                Result.failure(error, code).toJson().toJsonString()
-        );
+
+        // 构建统一返回结构
+        Restful.ResultJson resultJson = Restful.unauthorized(result.getError().getMessage());
+
+        // 写入响应
+        response.getWriter().write(resultJson.toJsonString());
     }
+
 }
+
+

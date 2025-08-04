@@ -10,7 +10,7 @@ public interface CourseCacheService {
     boolean reduceCourseStock(String courseOfferingId);
     boolean increaseCourseStock(String courseOfferingId);
     Long addStudentToCourse(String courseOfferingId,String studentIdentifier);
-    Long removeStudentFromCourse(String teachingClassCode,String courseOfferingId);
+    Long removeStudentFromCourse(String courseOfferingId,String studentIdentifier);
     boolean isStudentInCourse(String courseOfferingId,String studentIdentifier);
     Long getCourseStudentCount(String courseOfferingId);
     Boolean tryLock(String courseOfferingId,long expireSeconds);

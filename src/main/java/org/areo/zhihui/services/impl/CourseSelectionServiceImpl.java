@@ -28,13 +28,13 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
     public Result<Void> selectCourse(String studentIdentifier, String courseOfferingId){
         //检查是否已经选课
         if (courseCacheService.isStudentInCourse(courseOfferingId,studentIdentifier)){
-            return Result.failure(new CommonException("已选过该课程"));
+            throw new CommonException("已选过该课程");
         }
 
         //获取分布式锁
         boolean locked = courseCacheService.tryLock(courseOfferingId,30);
         if(!locked){
-            return Result.failure(new CommonException("系统繁忙,请稍后重试"));
+            throw new CommonException("系统繁忙,请稍后重试");
         }
 
         try {
@@ -47,12 +47,12 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
                     stock = courseOffering.getCurrentCapacity();
                     courseCacheService.initCourseStockCache(courseOfferingId,stock);
                 }catch (Exception e){
-                    return Result.failure(e);
+                    throw e;
                 }
             }
 
             if(stock <= 0){
-                return Result.failure(new CommonException("课程已满"));
+                throw new CommonException("课程已满");
             }
 
             //扣减库存
@@ -62,12 +62,12 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
 
             //异步写入数据库
             asyncSaveSelection(studentIdentifier,courseOfferingId);
-            return Result.success(null);
 
         }finally {
             //释放锁
             courseCacheService.releaseLock(courseOfferingId);
         }
+        return Result.success(null);
     }
 
     @Async
@@ -78,7 +78,7 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
             if(exists){
                 //回滚Redis操作
                 courseCacheService.increaseCourseStock(courseOfferingId);
-                courseCacheService.removeStudentFromCourse(studentIdentifier,courseOfferingId);
+                courseCacheService.removeStudentFromCourse(courseOfferingId,studentIdentifier);
                 return;
             }
 
@@ -94,7 +94,8 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
             log.error("异步保存选课记录失败:{}",e.getMessage());
             //回滚Redis操作
             courseCacheService.increaseCourseStock(courseOfferingId);
-            courseCacheService.removeStudentFromCourse(studentIdentifier,courseOfferingId);
+            courseCacheService.removeStudentFromCourse(courseOfferingId,studentIdentifier);
+            throw e;
         }
     }
 
@@ -103,13 +104,13 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
     public Result<Void> withdrawCourse(String studentIdentifier, String courseOfferingId){
         //检查是否已选课程
         if (!courseCacheService.isStudentInCourse(courseOfferingId,studentIdentifier)){
-            return Result.failure(new CommonException("学生尚未选择该课程"));
+            throw new CommonException("学生尚未选择该课程");
         }
 
         //获取分布式锁
         boolean locked = courseCacheService.tryLock(courseOfferingId,30);
         if(!locked){
-            return Result.failure(new CommonException("系统繁忙,请稍后再试"));
+            throw new CommonException("系统繁忙,请稍后再试");
         }
 
         //减少库存
@@ -123,7 +124,7 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
                     stock = courseOffering.getCurrentCapacity();
                     courseCacheService.initCourseStockCache(courseOfferingId,stock);
                 }catch (Exception e){
-                    return Result.failure(e);
+                    throw e;
                 }
             }
 
@@ -133,11 +134,12 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
 
             //异步写入数据库
             asyncWithdrawSelection(studentIdentifier,courseOfferingId);
-            return Result.success(null);
+
         }finally {
             //释放锁
             courseCacheService.releaseLock(courseOfferingId);
         }
+        return Result.success(null);
     }
 
     @Async

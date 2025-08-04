@@ -6,5 +6,5 @@ import lombok.Data;
 @Data
 public class EnrollmentBaseRequest {
     @NotNull(message = "课程编号不能为空")
-    private String courseOfferingId;
+    private Integer courseOfferingId;
 }

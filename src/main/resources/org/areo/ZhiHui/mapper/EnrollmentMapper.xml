@@ -5,7 +5,7 @@
         select exists(
             select 1
             from enrollment e
-            where e.student_identifier = #{studentIdentifier} and e.teaching_class_code = #{teachingClassCode}
+            where e.student_identifier = #{studentIdentifier} and e.course_offering_id = #{courseOfferingId}
         )
     </select>
 </mapper>

@@ -7,5 +7,5 @@ import org.areo.zhihui.pojo.entity.Enrollment;
 @Mapper
 public interface EnrollmentMapper extends BaseMapper<Enrollment> {
 
-    boolean checkIfStudentHasSelectedCourse(String studentIdentifier, String teachingClassCode);
+    boolean checkIfStudentHasSelectedCourse(String studentIdentifier, String courseOfferingId);
 }

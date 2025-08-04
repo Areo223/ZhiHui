@@ -21,7 +21,6 @@ public class CourseAddRequest {
     protected String courseCode;
 
     @Nullable
-    @Size(max = 50, message = "课程类型长度不能超过50")
     @Schema(description = "课程类型", example = "普通课程")
     private CourseTypeEnum courseType;
 
@@ -32,8 +31,6 @@ public class CourseAddRequest {
 
     // 课程总学时
     private Integer totalHours;
-    // 课程总周数
-    private Integer weeklyHours;
     // 学分
     private Integer credit;
     // 考试时间

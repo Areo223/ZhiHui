@@ -50,8 +50,8 @@ public class CourseCacheServiceImpl implements CourseCacheService {
     }
 
     //从课程中移除学生
-    public Long removeStudentFromCourse(String teachingClassCode, String courseOfferingId){
-        return redisTemplate.opsForSet().remove(COURSE_STUDENTS_KEY+ teachingClassCode, courseOfferingId);
+    public Long removeStudentFromCourse(String courseOfferingId, String studentIdentifier){
+        return redisTemplate.opsForSet().remove(COURSE_STUDENTS_KEY+ courseOfferingId, studentIdentifier);
     }
 
     //检查学生是否已选课程
