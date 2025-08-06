@@ -3,6 +3,9 @@ package org.areo.zhihui.services;
 
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Map;
+
 @Service
 public interface CourseCacheService {
     void initCourseStockCache(String courseOfferingId,Integer capacity);
@@ -15,4 +18,9 @@ public interface CourseCacheService {
     Long getCourseStudentCount(String courseOfferingId);
     Boolean tryLock(String courseOfferingId,long expireSeconds);
     Boolean releaseLock(String courseOfferingId);
+
+
+    Integer getCourseMaxCapacity(String courseOfferingId);
+
+    void initCourseMaxCapacityCache(String courseOfferingId, Integer maxCapacity);
 }

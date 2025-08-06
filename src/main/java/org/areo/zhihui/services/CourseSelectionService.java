@@ -9,4 +9,6 @@ public interface CourseSelectionService {
     void asyncSaveSelection(String studentIdentifier, String courseOfferingId);
     Result<Void> withdrawCourse(String studentIdentifier, String courseOfferingId);
     void asyncWithdrawSelection(String studentIdentifier, String courseOfferingId);
+
+    void asyncDBToRedis();
 }

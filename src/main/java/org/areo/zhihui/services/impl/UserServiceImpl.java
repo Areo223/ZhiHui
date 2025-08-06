@@ -30,6 +30,7 @@ import org.areo.zhihui.utils.regex.RegexValidator;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,35 +48,93 @@ public class UserServiceImpl implements UserService {
     final private UserMapper userMapper;
     final private PasswordEncoder passwordEncoder;
     final private JwtUtils jwtUtils;
-    private final RedisTemplate redisTemplate;
+    private final RedisTemplate<String,Object> redisTemplate;
+    private final StringRedisTemplate stringRedisTemplate;
     private final MailMsg mailMsg;
 
     @Override
     public Result<LoginVO> login(String identifier, String password) {
-        log.info("开始登录流程，用户标识: {}", identifier);
-        return validateInput(identifier, password)
-                .flatMap(__ -> {
-                    log.debug("输入参数校验通过");
-                    return checkPasswordStrength(password);
-                })
-                .flatMap(__ -> {
-                    log.debug("密码强度校验通过");
-                    return checkUserStatus(identifier);
-                })
-                .flatMap(user -> {
-                    log.info("用户状态检查完成，准备登录");
-                    return doLogin(user, password);
-                })
-                .ifSuccess(loginResult ->
-                        log.info("用户登录成功，标识: {}", identifier))
-                .ifFailure((e, code) ->
-                        log.warn("登录失败: 标识={}, 错误码={}, 原因={}", identifier, code, e.getMessage()));
+
+        //获取分布式锁
+        String lockKey = "lock:user:" + identifier;
+        try {
+            boolean locked = Boolean.TRUE.equals(stringRedisTemplate.opsForValue().setIfAbsent(
+                    lockKey,
+                    "1",
+                    Duration.ofMinutes(1)
+            ));
+            if (!locked) {
+                return Result.failure(new CommonException("登录失败，请稍后重试"));
+            }
+
+
+            log.info("开始登录流程，用户标识: {}", identifier);
+
+            //先从Redis中尝试获取用户信息
+            User targetUser = getUsersRedis(identifier);
+            if (targetUser == null) {
+                //没有数据再尝试从数据库获取
+                targetUser = userMapper.selectOne(new QueryWrapper<User>().eq("identifier", identifier));
+                if (targetUser == null) {
+                    return Result.failure(new UserNotRegisteredException("用户不存在"));
+                }
+                if (targetUser.checkIfLocked()) {
+                    return Result.failure(new AccountLockedException("用户已锁定"));
+                }
+                //将用户信息存入Redis
+                putUsersRedis(targetUser);
+            }
+            // 检查密码
+            if (!passwordEncoder.matches(password, targetUser.getPassword())) {
+                return Result.failure(new ValidatorException.ErrorPasswordException());
+            }
+            Object object = stringRedisTemplate.opsForValue().get("user:token:" + identifier);
+            String token;
+            if (object != null) {
+                token = object.toString();
+            } else {
+                token = jwtUtils.generateToken(targetUser);
+                // token也存入Redis
+                stringRedisTemplate.opsForValue().set("user:token:"+identifier,token,Duration.ofHours(5));
+            }
+            return Result.success(new LoginVO(token));
+
+        } finally {
+            stringRedisTemplate.delete(lockKey);
+        }
+    }
+
+    private void putUsersRedis(User user) {
+        redisTemplate.opsForHash().put("user:"+user.getIdentifier(), "password", user.getPassword());
+        redisTemplate.opsForHash().put("user:"+user.getIdentifier(), "id", user.getId());
+    }
+
+    private User getUsersRedis(String identifier) {
+        Object password = redisTemplate.opsForHash().get("user:"+identifier,"password");
+        Object id = redisTemplate.opsForHash().get("user:"+identifier,"id");
+        if (password != null && id != null) {
+            User user = new User();
+            user.setPassword(password.toString());
+            user.setId(Integer.parseInt(id.toString()));
+            return user;
+        }
+        return null;
     }
 
     @Override
     @Transactional
     public Result<Void> addUser(String identifier, String password,String name,RoleEnum role) {
         log.info("开始注册流程，用户标识: {}", identifier);
+        // 检查密码强度
+        Result<Void> passwordCheckResult = checkPasswordStrength(password);
+        if (!passwordCheckResult.isSuccess()) {
+            return passwordCheckResult;
+        }
+        // 检查账号格式
+        Result<Void> identifierCheckResult = checkIdentifier(identifier);
+        if (!identifierCheckResult.isSuccess()) {
+            return identifierCheckResult;
+        }
 
         // 检查用户是否已存在（防止并发注册）
         if (userMapper.exists(new QueryWrapper<User>().eq("identifier", identifier))) {
@@ -83,10 +142,9 @@ public class UserServiceImpl implements UserService {
             return Result.failure(new CommonException("该账号已注册"));
         }
 
-        log.debug("开始加密密码");
         String encryptedPassword = passwordEncoder.encode(password);
 
-        log.debug("构建用户对象");
+
         User user = new User();
         user.setIdentifier(identifier);
         user.setPassword(encryptedPassword);
@@ -95,7 +153,6 @@ public class UserServiceImpl implements UserService {
         user.setLocked(LockedEnum.NOT_LOCKED);
 
         try {
-            log.debug("准备写入数据库");
             int affectedRows = userMapper.insert(user);
             if (affectedRows == 0) {
                 log.error("数据库写入失败，标识: {}", identifier);
@@ -327,20 +384,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Result<QueryVO<Object>> getUsers(Integer pageNum, Integer pageSize, Map<String, Boolean> sorts, UserListRequest.Conditions conditions) {
         log.debug("开始查询用户列表，页码: {}, 每页大小: {}", pageNum, pageSize);
-        Page<User> page = new Page<>(pageNum, pageSize);
-
-        //根据排序字段依次排序
-        if (sorts != null) {
-            //按排序字段顺序优先级排序,降序为true,升序为false
-            for (Map.Entry<String, Boolean> entry : sorts.entrySet()) {
-                String sortField = entry.getKey();
-                boolean isDesc = entry.getValue();
-                OrderItem orderItem = new OrderItem();
-                orderItem.setColumn(sortField);
-                orderItem.setAsc(!isDesc);
-                page.addOrder(orderItem);
-            }
-        }
+        Page<User> page = getUserPage(pageNum, pageSize, sorts);
 
         IPage<User> userPage = userMapper.selectPage(page,new LambdaQueryWrapper<User>()
                 .eq(conditions.getRole() != null, User::getRole, conditions.getRole())
@@ -373,6 +417,24 @@ public class UserServiceImpl implements UserService {
 
     }
 
+    private static Page<User> getUserPage(Integer pageNum, Integer pageSize, Map<String, Boolean> sorts) {
+        Page<User> page = new Page<>(pageNum, pageSize);
+
+        //根据排序字段依次排序
+        if (sorts != null) {
+            //按排序字段顺序优先级排序,降序为true,升序为false
+            for (Map.Entry<String, Boolean> entry : sorts.entrySet()) {
+                String sortField = entry.getKey();
+                boolean isDesc = entry.getValue();
+                OrderItem orderItem = new OrderItem();
+                orderItem.setColumn(sortField);
+                orderItem.setAsc(!isDesc);
+                page.addOrder(orderItem);
+            }
+        }
+        return page;
+    }
+
 //    @Override
 //    public Result<Object> getUserCount() {
 //        //查询每个角色的用户数
@@ -381,73 +443,75 @@ public class UserServiceImpl implements UserService {
 //        return Result.success(userCountMap);
 //    }
 
-    private Result<Void> checkPasswordStrength(String password) {
-        log.debug("检查密码强度");
-        boolean isValid = RegexValidator.validate(password, RegexValidator.RegexPattern.PASSWORD);
-        if (!isValid) {
-            log.warn("密码强度不符合要求");
-        }
-        return isValid
-                ? Result.success(null)
-                : Result.failure(new ValidatorException.InvalidPasswordException("密码强度不符合要求"));
-    }
-
-    /**
-     * 检查用户状态，如果未注册则自动注册
-     */
-    private Result<User> checkUserStatus(String identifier) {
-        log.debug("检查用户状态，标识: {}", identifier);
-        User user = userMapper.selectOne(new QueryWrapper<User>().eq("identifier", identifier));
-
-        if (user != null) {
-            log.debug("用户存在，检查状态");
-            if (user.checkIfLocked()) {
-                log.warn("用户已被锁定，标识: {}", identifier);
-                return Result.failure(new AccountLockedException("用户已被锁定"));
-            }
-            if (!RegexValidator.validate(identifier, RegexValidator.RegexPattern.IDENTIFIER)) {
-                log.warn("账号格式错误，标识: {}", identifier);
-                return Result.failure(new IllegalArgumentException("账号格式错误"));
-            }
-            log.debug("用户状态正常");
-            return Result.success(user);
-        }
-
-        log.debug("用户未注册，标识: {}", identifier);
-        return Result.failure(new AccountLockedException("用户未注册"));
-//        return addUser(request.getIdentifier(), identifier, password, request.getRole())
-//                .ifSuccess(__ -> log.info("自动注册成功，标识: {}", identifier))
-//                .flatMap(__ -> {
-//                    log.debug("注册成功，重新查询用户信息");
-//                    User newUser = userMapper.selectOne(new QueryWrapper<User>().eq("identifier", identifier));
-//                    if (newUser == null) {
-//                        log.error("注册后查询用户失败，标识: {}", identifier);
-//                        return Result.failure(new RuntimeException("注册成功但查询用户失败"));
-//                    }
-//                    return Result.success(newUser);
-//                });
-    }
-
-    private Result<Void> validateInput(String identifier, String password) {
-        log.debug("验证输入参数");
-        if (identifier == null || password == null) {
-            log.warn("参数为空，标识: {}, 密码为空: {}", identifier, password == null);
-            return Result.failure(new IllegalArgumentException("参数不能为空"));
+    private Result<Void> checkIdentifier(String identifier) {
+        if (!RegexValidator.validate(identifier, RegexValidator.RegexPattern.IDENTIFIER)) {
+            log.warn("账号格式错误，标识: {}", identifier);
+            return Result.failure(new IllegalArgumentException("账号格式错误"));
         }
         return Result.success(null);
     }
 
-    private Result<LoginVO> doLogin(User user, String password) {
-        log.debug("开始登录验证，用户ID: {}", user.getId());
-
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            log.warn("密码验证失败，用户标识: {}", user.getIdentifier());
-            return Result.failure(new ValidatorException.ErrorPasswordException("密码错误"));
+    private Result<Void> checkPasswordStrength(String password) {
+        if (!RegexValidator.validate(password, RegexValidator.RegexPattern.PASSWORD)) {
+            log.warn("密码强度不符合要求");
+            return Result.failure(new ValidatorException.InvalidPasswordException("密码强度不符合要求"));
         }
-
-        log.debug("密码验证成功，生成Token");
-        String token = jwtUtils.generateToken(user);
-        log.info("登录成功，用户ID: {}, 标识: {}, 身份: {}", user.getId(), user.getIdentifier(),user.getRole());
-        return Result.success(new LoginVO(token));
+        return Result.success(null);
     }
+
+//    private Result<User> checkUserStatus(String identifier) {
+//        String redisPassword = getUsersRedis(identifier).getPassword();
+//        if (redisPassword == null) {
+//            log.warn("用户未注册，标识: {}", identifier);
+//            return Result.failure(new AccountLockedException("用户未注册"));
+//        }
+//        User user = userMapper.selectOne(new QueryWrapper<User>().eq("identifier", identifier));
+//
+//        if (user != null) {
+//            if (user.checkIfLocked()) {
+//                log.warn("用户已被锁定，标识: {}", identifier);
+//                return Result.failure(new AccountLockedException("用户已被锁定"));
+//            }
+//
+//            return Result.success(user);
+//        }
+//
+//        log.warn("用户未注册，标识: {}", identifier);
+//        return Result.failure(new AccountLockedException("用户未注册"));
+////        return addUser(request.getIdentifier(), identifier, password, request.getRole())
+////                .ifSuccess(__ -> log.info("自动注册成功，标识: {}", identifier))
+////                .flatMap(__ -> {
+////                    log.debug("注册成功，重新查询用户信息");
+////                    User newUser = userMapper.selectOne(new QueryWrapper<User>().eq("identifier", identifier));
+////                    if (newUser == null) {
+////                        log.error("注册后查询用户失败，标识: {}", identifier);
+////                        return Result.failure(new RuntimeException("注册成功但查询用户失败"));
+////                    }
+////                    return Result.success(newUser);
+////                });
+//    }
+
+//    private Result<Void> validateInput(String identifier, String password) {
+//        log.debug("验证输入参数");
+//        if (identifier == null || password == null) {
+//            log.warn("参数为空，标识: {}, 密码为空: {}", identifier, password == null);
+//            return Result.failure(new IllegalArgumentException("参数不能为空"));
+//        }
+//        return Result.success(null);
+//    }
+//
+//    private Result<LoginVO> doLogin(User user, String password) {
+//
+//        if (!passwordEncoder.matches(password, user.getPassword())) {
+//            log.warn("密码验证失败，用户标识: {}", user.getIdentifier());
+//            return Result.failure(new ValidatorException.ErrorPasswordException("密码错误"));
+//        }
+//
+//        log.info("密码验证成功，生成Token");
+//        String token = jwtUtils.generateToken(user);
+//        log.info("登录成功，用户ID: {}, 标识: {}, 身份: {}", user.getId(), user.getIdentifier(),user.getRole());
+//        return Result.success(new LoginVO(token));
+//    }
+
+
 }

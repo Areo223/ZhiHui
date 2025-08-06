@@ -1,21 +1,59 @@
 package org.areo.zhihui.services.impl;
 
+import io.lettuce.core.RedisCommandExecutionException;
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
+import org.areo.zhihui.exception.CommonException;
 import org.areo.zhihui.services.CourseCacheService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Service
+@Slf4j
 public class CourseCacheServiceImpl implements CourseCacheService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final StringRedisTemplate stringRedisTemplate;
+    private String selectScriptSha;
+    private String withdrawScriptSha;
+
 
     private static final String COURSE_CACHE_KEY = "course:stock:";
     private static final String COURSE_STUDENTS_KEY = "course:students:";
     private static final String LOCK_KEY = "course:lock:";
+
+    @PostConstruct
+    public void init() {
+        this.selectScriptSha = loadScript("lua/select_course.lua");
+        log.info("selectScriptSha:{}",selectScriptSha);
+        this.withdrawScriptSha = loadScript("lua/withdraw_course.lua");
+        log.info("withdrawScriptSha:{}",withdrawScriptSha);
+    }
+
+    private String loadScript(String scriptPath) {
+        try {
+            String script = new String(Files.readAllBytes(
+                    Paths.get(getClass().getClassLoader().getResource(scriptPath).toURI())), StandardCharsets.UTF_8);
+            return redisTemplate.execute(
+                    (RedisCallback<String>) connection ->
+                            connection.scriptLoad(script.getBytes()));
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to load Lua script", e);
+        }
+    }
+
 
     @Autowired
     public CourseCacheServiceImpl(RedisTemplate<String, Object> redisTemplate, StringRedisTemplate stringRedisTemplate) {
@@ -77,5 +115,17 @@ public class CourseCacheServiceImpl implements CourseCacheService {
     //释放分布式锁
     public Boolean releaseLock(String courseOfferingId){
         return stringRedisTemplate.delete(LOCK_KEY+ courseOfferingId);
+    }
+
+    @Override
+    public Integer getCourseMaxCapacity(String courseOfferingId) {
+        Object maxCapacity = redisTemplate.opsForHash().get(COURSE_CACHE_KEY + courseOfferingId, "maxCapacity");
+        return maxCapacity != null ? Integer.parseInt(maxCapacity.toString()) : null;
+    }
+
+    @Override
+    public void initCourseMaxCapacityCache(String courseOfferingId, Integer maxCapacity) {
+        redisTemplate.opsForHash().put(COURSE_CACHE_KEY+ courseOfferingId,"maxCapacity",maxCapacity);
+        redisTemplate.expire(COURSE_CACHE_KEY+ courseOfferingId,1, TimeUnit.HOURS);
     }
 }

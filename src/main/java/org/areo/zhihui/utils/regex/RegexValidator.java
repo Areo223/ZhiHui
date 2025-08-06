@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 public class RegexValidator {
 
 
-    // 常见正则表达式模式
     @Getter
     public enum RegexPattern {
         // 用户名: 字母开头，允许字母数字下划线，长度4-16

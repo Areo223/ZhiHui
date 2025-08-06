@@ -64,6 +64,17 @@ public class EnrollmentController {
         return enrollmentService.getSelectedCourse().toJson();
     }
 
+    @Operation(summary = "同步数据库数据到redis", description = "同步数据库数据到redis")
+    @RequiresRole(RoleEnum.ADMIN)
+    @PostMapping("/async")
+    public ResultJson async() {
+        return enrollmentService.asyncDBToRedis().toJson();
+    }
+
+
+
+
+
     @Operation(summary = "教师录入学生成绩",description = "教师录入学生成绩")
     @RequiresRole(RoleEnum.TEACHER)
     @PostMapping("/grade")

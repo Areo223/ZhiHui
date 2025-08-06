@@ -106,5 +106,13 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         enrollmentMapper.updateById(enrollment);
         return Result.success(enrollment);
     }
+
+    @Override
+    public Result<Void> asyncDBToRedis() {
+        courseSelectionService.asyncDBToRedis();
+        return Result.success(null);
+    }
+
+
 }
 

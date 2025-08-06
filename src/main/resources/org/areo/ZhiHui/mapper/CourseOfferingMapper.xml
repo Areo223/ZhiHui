@@ -13,4 +13,12 @@
         set current_capacity = current_capacity + 1
         where  id = #{courseOfferingId}
     </update>
+
+    <update id="batchUpdateCapacity">
+        <foreach collection="changes" item="item" separator=";">
+            update course_offering
+            set current_capacity = current_capacity - #{item.value}
+            where id = #{item.key}
+        </foreach>
+    </update>
 </mapper>

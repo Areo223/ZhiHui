@@ -16,10 +16,12 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class CourseSelectionServiceImpl implements CourseSelectionService {
+public class BaseCourseSelectionServiceImpl implements CourseSelectionService {
     private final CourseCacheService courseCacheService;
     private final CourseOfferingMapper courseOfferingMapper;
     private final EnrollmentMapper enrollmentMapper;
@@ -56,9 +58,14 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
             }
 
             //扣减库存
-            courseCacheService.reduceCourseStock(courseOfferingId);
-            courseCacheService.addStudentToCourse(courseOfferingId,studentIdentifier);
-
+            if (!courseCacheService.reduceCourseStock(courseOfferingId)) {
+                throw new CommonException("扣减库存失败");
+            }
+            //添加学生到课程
+            Long addCount = courseCacheService.addStudentToCourse(courseOfferingId,studentIdentifier);
+            if (addCount == 0) {
+                throw new CommonException("添加学生失败");
+            }
 
             //异步写入数据库
             asyncSaveSelection(studentIdentifier,courseOfferingId);
@@ -128,10 +135,15 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
                 }
             }
 
-            courseCacheService.increaseCourseStock(courseOfferingId);
-            courseCacheService.removeStudentFromCourse(studentIdentifier,courseOfferingId);
-
-
+            //增加库存
+            if (!courseCacheService.increaseCourseStock(courseOfferingId)) {
+                throw new CommonException("增加库存失败");
+            }
+            //从课程中移除学生
+            Long removeCount = courseCacheService.removeStudentFromCourse(courseOfferingId,studentIdentifier);
+            if (removeCount == 0) {
+                throw new CommonException("移除学生失败");
+            }
             //异步写入数据库
             asyncWithdrawSelection(studentIdentifier,courseOfferingId);
 
@@ -160,11 +172,23 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
 
             //更新选课已选人数
             courseOfferingMapper.increaseCurrentCapacity(courseOfferingId);
+
         }catch (Exception e){
             log.error("异步保存退课记录失败:{}",e.getMessage());
             //回滚Redis操作
             courseCacheService.reduceCourseStock(courseOfferingId);
             courseCacheService.addStudentToCourse(studentIdentifier,courseOfferingId);
+            throw e;
+        }
+    }
+
+    @Override
+    public void asyncDBToRedis() {
+        List<CourseOffering> courseOfferings = courseOfferingMapper.selectList(null);
+        // 同步数据到redis
+        for (CourseOffering courseOffering : courseOfferings) {
+            Integer stock = courseOffering.getCurrentCapacity();
+            courseCacheService.initCourseStockCache(courseOffering.getId().toString(),stock);
         }
     }
 }

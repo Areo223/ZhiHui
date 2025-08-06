@@ -2,10 +2,18 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="org.areo.zhihui.mapper.EnrollmentMapper">
     <select id="checkIfStudentHasSelectedCourse" resultType="java.lang.Boolean">
-        select exists(
-            select 1
-            from enrollment e
-            where e.student_identifier = #{studentIdentifier} and e.course_offering_id = #{courseOfferingId}
-        )
+        select exists(select 1
+                      from enrollment Force INDEX (enrollment_student_identifier_course_offering_id_index)
+                      where student_identifier = #{studentIdentifier}
+                        and course_offering_id = #{courseOfferingId}
+                        and deleted = 0)
     </select>
+
+    <delete id="deleteBatch">
+        delete from enrollment where enrollment.student_identifier and enrollment.course_offering_id in
+        <foreach collection="dropList" item="item" open="(" close=")" separator=",">
+            #{item.studentIdentifier},#{item.courseOfferingId}
+        </foreach>
+        and deleted = 0
+    </delete>
 </mapper>

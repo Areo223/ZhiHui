@@ -20,4 +20,6 @@ public interface EnrollmentService {
     Result<Enrollment> getGrade(String studentIdentifier, Integer courseOfferingId);
 
     Result<Enrollment> updGrade(String studentIdentifier, Integer courseOfferingId, Integer grade);
+
+    Result<Void> asyncDBToRedis();
 }
